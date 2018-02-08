@@ -1,12 +1,12 @@
 $ErrorActionPreference = "Stop"
 
-# https://git.io/vAJE2
+# https://git.io/vAU3J
 
-#Run from powershell
-#Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vAJua'))
+# Run from powershell
+# Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vAU3J'))
 
-#Run from CMD
-#@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vAJua'))"
+# Run from CMD
+# @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vAU3J'))"
 
 function installQuery($message) {
     while ($TRUE){
