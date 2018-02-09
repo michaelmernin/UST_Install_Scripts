@@ -228,19 +228,19 @@ function GetPython ($USTFolder, $DownloadFolder) {
     $pythonInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Python% (64-bit)'"
 
     if ($pythonInstalled){
-        $pyver = [Version]$pythonInstalled.Version
+        $pyver = $pythonInstalled.Version
         Write-Host "Python version $pyver is currently installed".
     } else {
         $pyver = "1.0"
         Write-Host "Python is not installed."
     }
 
-    if ([Version]$pyver -ge [Version]"2.7" -and [Version]$pyver -lt [Version]"3.0"){
+    if ($pyver -ge [Version]"2.7" -and $pyver -lt [Version]"3.0"){
         Write-Host "Version $pyver meets the requirements, but Python 3.6.3 or higher is recommended."
         $install = installQuery("Would you like to upgrade now? (y/n)")
         $inst_version = 3
         $UST_version = 2
-    } elseif ([Version]$pyver -ge [Version]"3.6") {
+    } elseif ($pyver -ge [Version]"3.6") {
         Write-Host "No python update needed, skipping... "
     } else {
         Write-Host "Python must be installed / updated..."
