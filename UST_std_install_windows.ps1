@@ -254,7 +254,7 @@ function GetPython ($USTFolder, $DownloadFolder) {
             $pythonURL = "https://www.python.org/ftp/python/2.7.14/python-2.7.14.amd64.msi"
             $UST_version = 2
         } else {
-            $pythonURL = "https://www.python.org/ftp/python/3.6.3/python-3.6.3-amd64.exe"
+            $pythonURL = "https://www.python.org/ftp/python/3.6.4/python-3.6.4-amd64.exe"
             $UST_version = 3
         }
 
