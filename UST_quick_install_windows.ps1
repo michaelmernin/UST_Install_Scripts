@@ -207,14 +207,16 @@ function GetPython ($USTFolder, $DownloadFolder) {
     $inst_version = 3
     $UST_version = 3
 
-    $pythonInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Python% (64-bit)'"
+    $pythonInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Python%'"
+    $pyver = $pythonInstalled.Version
 
-    if ($pythonInstalled){
-        $pyver = $pythonInstalled.Version
-        Write-Host "Python version $pyver is currently installed".
-    } else {
+    if (-Not ($pythonInstalled) -Or ($pyver -lt [Version]"3.0")  )  {
+
         $install = $TRUE
-        $inst_version = 2
+        $inst_version = 3
+
+    } else {
+        Write-Host "Python version $pyver is currently installed".
     }
 
     if ($install){
