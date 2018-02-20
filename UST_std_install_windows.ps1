@@ -1,12 +1,10 @@
 $ErrorActionPreference = "Stop"
 
-# https://git.io/vAU3J
-
 # Run from powershell
-# Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vAU3J'))
+# Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vABrl'))
 
 # Run from CMD
-# @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vAU3J'))"
+# @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vABrl'))"
 
 function installQuery($message) {
     while ($TRUE){
@@ -297,9 +295,9 @@ function GetPython ($USTFolder, $DownloadFolder) {
 function Cleanup($DownloadFolder) {
     #Cleanup
     #Delete Temp DownloadFolder for UST, Python and Config files
-    Remove-Item -Path $DownloadFolder -Recurse -Confirm:$false -Force -Verbose
+    Remove-Item -Path $DownloadFolder -Recurse -Confirm:$false -Force
     #Delete 7-zip temp folder
-    Remove-Item -Path "$env:TEMP\7zip" -Recurse -Confirm:$false -Force -Verbose
+    Remove-Item -Path "$env:TEMP\7zip" -Recurse -Confirm:$false -Force
 }
 
 # Main
