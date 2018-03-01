@@ -87,10 +87,11 @@ function GetJava ($DownloadFolder){
     $JREURL = "https://github.com/janssenda/vm_resources/raw/master/jre-8u161-windows-x64.exe"
 
 
-    $javInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Java%'"
+    $javaInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Java%'"
+    $jv = $javaInstalled.Version
 
     if ($javInstalled){
-        return $false
+        Write-Host "Java $jv already installed! Skipping...  "
     }
 
     $filename = $JREURL.Split('/')[-1]
@@ -168,6 +169,8 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     #Create Temp download folder
     New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
 
+    GetJava ($DownloadFolder)
+
     GetFiles $LDAPFolder $DownloadFolder
     $requireRestart = GetJava $DownloadFolder
 
@@ -178,7 +181,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     (New-Object System.Net.WebClient).DownloadFile($link,"inst.ps1"); ./inst.ps1 -py $pythonVersion; rm -Force ./inst.ps1;
 
     if ($requireRestart){
-        Write-Host "`n`n(GUI mode only) You must restart the computer before you can run java -jar on the LDAP server...`n`n" -ForegroundColor Yellow -BackgroundColor DarkGreen
+        Write-Host "`n`n(GUI mode only) You must restart the computer before you can run java -jar on the LDAP server...`n`n"
     }
 
 }else{

@@ -1,7 +1,7 @@
 param([String]$py="3", [Switch]$retry=$false)
 
 if ($py -eq "2"){
-$pythonVersion = "2"
+    $pythonVersion = "2"
 } else {$pythonVersion = "3"}
 
 $ErrorActionPreference = "Stop"
@@ -162,7 +162,7 @@ function GetOpenSSL ($USTFolder, $DownloadFolder) {
         }
     }
 
-#    #Download Default Openssl.cfg configuration file
+    #    #Download Default Openssl.cfg configuration file
     $openSSLConfigURL = 'http://web.mit.edu/crypto/openssl.cnf'
     $openSSLConfigFileName = $openSSLConfigURL.Split('/')[-1]
     $openSSLConfigOutputPath = "$USTFolder\Utils\openSSL\$openSSLConfigFileName"
@@ -326,12 +326,12 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     Cleanup $DownloadFolder
 
     Write-Host "Completed - You can begin to edit configuration files in $USTFolder"
-#    Set-Location -Path $USTFolder
-#
-#    try{
-#        #Open UST Install Folder
-#        & explorer.exe $USTFolder
-#    }catch {}
+    #    Set-Location -Path $USTFolder
+    #
+    #    try{
+    #        #Open UST Install Folder
+    #        & explorer.exe $USTFolder
+    #    }catch {}
 
 }else{
     Write-host "Not elevated. Re-run the script with elevated permission"
