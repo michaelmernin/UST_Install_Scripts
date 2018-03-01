@@ -14,8 +14,8 @@
       <file leaf-file-name="test-runner.ps1" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/dev/test-runner.ps1">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="15" column="1" lean-forward="false" selection-start-line="15" selection-start-column="1" selection-end-line="15" selection-end-column="1" />
+            <state relative-caret-position="144">
+              <caret line="9" column="59" lean-forward="false" selection-start-line="9" selection-start-column="59" selection-end-line="9" selection-end-column="59" />
               <folding />
             </state>
           </provider>
@@ -54,23 +54,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="full-dev-resources-dev.ps1" pinned="false" current-in-tab="false">
+      <file leaf-file-name="full-dev-resources-dev.ps1" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/dev/full-dev-resources-dev.ps1">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="358">
-              <caret line="168" column="70" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="197" selection-end-column="0" />
-              <folding>
-                <marker date="1519942529861" expanded="true" signature="5280:5656" ph="..." />
-              </folding>
+            <state relative-caret-position="54">
+              <caret line="149" column="5" lean-forward="false" selection-start-line="149" selection-start-column="5" selection-end-line="149" selection-end-column="5" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="full-dev-resources.ps1" pinned="false" current-in-tab="true">
+      <file leaf-file-name="full-dev-resources.ps1" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/full-dev-resources.ps1">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="886">
-              <caret line="197" column="0" lean-forward="true" selection-start-line="197" selection-start-column="0" selection-end-line="197" selection-end-column="0" />
+            <state relative-caret-position="630">
+              <caret line="181" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="197" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -109,10 +107,10 @@
         <option value="$PROJECT_DIR$/dev/UST_quick_install_windows-dev.ps1" />
         <option value="$PROJECT_DIR$/UST_quick_install_windows-dev.ps1" />
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/dev/test-runner.ps1" />
         <option value="$PROJECT_DIR$/UST_quick_install_windows.ps1" />
-        <option value="$PROJECT_DIR$/dev/full-dev-resources-dev.ps1" />
+        <option value="$PROJECT_DIR$/dev/test-runner.ps1" />
         <option value="$PROJECT_DIR$/full-dev-resources.ps1" />
+        <option value="$PROJECT_DIR$/dev/full-dev-resources-dev.ps1" />
       </list>
     </option>
   </component>
@@ -284,12 +282,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1519929716932</updated>
-      <workItem from="1519929719103" duration="10445000" />
+      <workItem from="1519929719103" duration="10570000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10445000" />
+    <option name="totallyTimeSpent" value="10570000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -412,26 +410,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dev/test-runner.ps1">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="15" column="1" lean-forward="false" selection-start-line="15" selection-start-column="1" selection-end-line="15" selection-end-column="1" />
+        <state relative-caret-position="144">
+          <caret line="9" column="59" lean-forward="false" selection-start-line="9" selection-start-column="59" selection-end-line="9" selection-end-column="59" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/full-dev-resources.ps1">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="630">
+          <caret line="181" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="197" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/dev/full-dev-resources-dev.ps1">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="358">
-          <caret line="168" column="70" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="197" selection-end-column="0" />
-          <folding>
-            <marker date="1519942529861" expanded="true" signature="5280:5656" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/full-dev-resources.ps1">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="886">
-          <caret line="197" column="0" lean-forward="true" selection-start-line="197" selection-start-column="0" selection-end-line="197" selection-end-column="0" />
+        <state relative-caret-position="54">
+          <caret line="149" column="5" lean-forward="false" selection-start-line="149" selection-start-column="5" selection-end-line="149" selection-end-column="5" />
           <folding />
         </state>
       </provider>

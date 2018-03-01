@@ -173,7 +173,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
 
     $DownloadFolder = "$env:TEMP\LDAPDownload"
     $LDAPFolder = SetDirectory
-    
+
     #Create Temp download folder
     New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
 
@@ -184,7 +184,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     Write-Host "Completed - You can run the server from $LDAPFolder"
 
     $link = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/UST_quick_install_windows.ps1"
-    (New-Object System.Net.WebClient).DownloadFile($link,"inst.ps1"); ./inst.ps1 -py $pythonVersion; rm -Force ./inst.ps1;
+    (New-Object System.Net.WebClient).DownloadFile($link,"instd.ps1"); ./instd.ps1 -py $pythonVersion; rm -Force ./instd.ps1;
 
     if ($requireRestart){
         Write-Host "`n`n(GUI mode only) You must restart the computer before you can run java -jar on the LDAP server...`n`n"
