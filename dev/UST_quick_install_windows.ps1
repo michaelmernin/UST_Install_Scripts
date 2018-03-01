@@ -1,6 +1,6 @@
 param([String]$py="xxx")
 $ErrorActionPreference = "Stop"
-Write-Host $py
+Write-Host "yyy"
 # Run from powershell
 # Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vABrB'))
 
