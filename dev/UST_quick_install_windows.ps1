@@ -1,6 +1,6 @@
 param([String]$py="xxx")
 $ErrorActionPreference = "Stop"
-Write-Host "yyy"
+
 # Run from powershell
 # Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vABrB'))
 
@@ -280,7 +280,7 @@ function Cleanup($DownloadFolder) {
 # Main
 if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
     Write-Host "Elevated."
-
+    Write-Host "yyy"
     Write-Host $py
 
 #    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
