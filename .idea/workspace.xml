@@ -11,11 +11,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="test-runner.ps1" pinned="false" current-in-tab="false">
+      <file leaf-file-name="test-runner.ps1" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/dev/test-runner.ps1">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
-              <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="105" />
+            <state relative-caret-position="48">
+              <caret line="3" column="109" lean-forward="false" selection-start-line="3" selection-start-column="109" selection-end-line="3" selection-end-column="109" />
               <folding />
             </state>
           </provider>
@@ -24,34 +24,34 @@
       <file leaf-file-name="UST_quick_install_windows-dev.ps1" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/dev/UST_quick_install_windows-dev.ps1">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="128">
-              <caret line="8" column="0" lean-forward="false" selection-start-line="8" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+            <state relative-caret-position="256">
+              <caret line="16" column="32" lean-forward="true" selection-start-line="16" selection-start-column="32" selection-end-line="16" selection-end-column="32" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="UST_quick_install_windows-dev.ps1" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/UST_quick_install_windows-dev.ps1">
+      <file leaf-file-name="UST_quick_install_windows.ps1" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/UST_quick_install_windows.ps1">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="416">
-              <caret line="26" column="8" lean-forward="true" selection-start-line="26" selection-start-column="8" selection-end-line="26" selection-end-column="8" />
+              <caret line="26" column="8" lean-forward="false" selection-start-line="26" selection-start-column="8" selection-end-line="26" selection-end-column="8" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="full-dev-resources-dev.ps1" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/full-dev-resources-dev.ps1">
+      <file leaf-file-name="full-dev-resources.ps1" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/full-dev-resources.ps1">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="2848">
-              <caret line="178" column="0" lean-forward="true" selection-start-line="178" selection-start-column="0" selection-end-line="178" selection-end-column="0" />
+              <caret line="178" column="0" lean-forward="false" selection-start-line="178" selection-start-column="0" selection-end-line="178" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="README.md" pinned="false" current-in-tab="true">
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
@@ -67,10 +67,10 @@
       <file leaf-file-name="full-dev-resources-dev.ps1" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/dev/full-dev-resources-dev.ps1">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="208">
-              <caret line="13" column="50" lean-forward="false" selection-start-line="13" selection-start-column="50" selection-end-line="13" selection-end-column="50" />
+            <state relative-caret-position="630">
+              <caret line="176" column="84" lean-forward="false" selection-start-line="176" selection-start-column="84" selection-end-line="176" selection-end-column="84" />
               <folding>
-                <marker date="1519939486926" expanded="true" signature="5179:5567" ph="..." />
+                <marker date="1519941159958" expanded="true" signature="5179:5567" ph="..." />
               </folding>
             </state>
           </provider>
@@ -104,12 +104,13 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/dev/test-runner.ps1" />
         <option value="$PROJECT_DIR$/dev/ust-dev-resources.ps1" />
         <option value="$PROJECT_DIR$/dev/UST_quick_install_windows.ps1" />
         <option value="$PROJECT_DIR$/dev/UST_quick_install_windows-dev.ps1" />
         <option value="$PROJECT_DIR$/UST_quick_install_windows-dev.ps1" />
         <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/dev/full-dev-resources-dev.ps1" />
+        <option value="$PROJECT_DIR$/dev/test-runner.ps1" />
       </list>
     </option>
   </component>
@@ -281,12 +282,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1519929716932</updated>
-      <workItem from="1519929719103" duration="8872000" />
+      <workItem from="1519929719103" duration="9135000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="8872000" />
+    <option name="totallyTimeSpent" value="9135000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -350,44 +351,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dev/full-dev-resources-dev.ps1">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="208">
-          <caret line="13" column="50" lean-forward="false" selection-start-line="13" selection-start-column="50" selection-end-line="13" selection-end-column="50" />
-          <folding>
-            <marker date="1519939486926" expanded="true" signature="5179:5567" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dev/UST_quick_install_windows-dev.ps1">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="128">
-          <caret line="8" column="0" lean-forward="false" selection-start-line="8" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/UST_quick_install_windows-dev.ps1">
+    <entry file="file://$PROJECT_DIR$/UST_quick_install_windows.ps1">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="416">
-          <caret line="26" column="8" lean-forward="true" selection-start-line="26" selection-start-column="8" selection-end-line="26" selection-end-column="8" />
+          <caret line="26" column="8" lean-forward="false" selection-start-line="26" selection-start-column="8" selection-end-line="26" selection-end-column="8" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dev/test-runner.ps1">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="105" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/full-dev-resources-dev.ps1">
+    <entry file="file://$PROJECT_DIR$/full-dev-resources.ps1">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2848">
-          <caret line="178" column="0" lean-forward="true" selection-start-line="178" selection-start-column="0" selection-end-line="178" selection-end-column="0" />
+          <caret line="178" column="0" lean-forward="false" selection-start-line="178" selection-start-column="0" selection-end-line="178" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -400,6 +375,32 @@
             <folding />
           </first_editor>
           <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dev/UST_quick_install_windows-dev.ps1">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="256">
+          <caret line="16" column="32" lean-forward="true" selection-start-line="16" selection-start-column="32" selection-end-line="16" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dev/full-dev-resources-dev.ps1">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="630">
+          <caret line="176" column="84" lean-forward="false" selection-start-line="176" selection-start-column="84" selection-end-line="176" selection-end-column="84" />
+          <folding>
+            <marker date="1519941159958" expanded="true" signature="5179:5567" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dev/test-runner.ps1">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="48">
+          <caret line="3" column="109" lean-forward="false" selection-start-line="3" selection-start-column="109" selection-end-line="3" selection-end-column="109" />
+          <folding />
         </state>
       </provider>
     </entry>

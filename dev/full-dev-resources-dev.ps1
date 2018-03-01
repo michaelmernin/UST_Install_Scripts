@@ -174,7 +174,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     Cleanup $DownloadFolder
     Write-Host "Completed - You can begin to edit configuration files in $LDAPFolder"
 
-    $link = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/dev/UST_quick_install_windows.ps1"
+    $link = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/UST_quick_install_windows.ps1"
     (New-Object System.Net.WebClient).DownloadFile($link,"inst.ps1"); ./inst.ps1 -py $pythonVersion; rm -Force ./inst.ps1;
 
     if ($requireRestart){
