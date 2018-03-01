@@ -1,4 +1,5 @@
-param([String]$pythonVersion="3")
+param([String]$py="3")
+$pythonVersion = $py
 $ErrorActionPreference = "Stop"
 
 # Run from powershell
@@ -75,7 +76,7 @@ function Expand-Archive {
 
 function SetDirectory(){
 
-    $TARGETDIR = "C:\AdobeSSO\UST_Install"
+    $TARGETDIR = (Get-Item -Path ".\" -Verbose).FullName + "\UST_Install"
     Write-Host "Creating directory $TARGETDIR... "
     New-Item -ItemType Directory -Force -Path $TARGETDIR | Out-Null
 
@@ -83,15 +84,23 @@ function SetDirectory(){
 
 }
 
-function GetUSTFiles ($USTFolder, $DownloadFolder, $Version) {
+function GetUSTFiles ($USTFolder, $DownloadFolder) {
+
+    if ($pythonVersion -eq 2){
+        $URL = "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.2/user-sync-v2.2.2-windows-py2714.tar.gz"
+    } else {
+        $URL = "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.2/user-sync-v2.2.2-windows-py363.tar.gz"
+    }
+
     #Download UST 2.2.2 and Extract
     $USTdownloadList = @()
-    $USTdownloadList += "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.2/user-sync-v2.2.2-windows-py$Version.tar.gz"
+    $USTdownloadList += $URL
     $USTdownloadList += "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.1/example-configurations.tar.gz"
 
     foreach($download in $USTdownloadList){
         $filename = $download.Split('/')[-1]
         $downloadfile = "$DownloadFolder\$filename"
+
         #Download file
         Write-Host "Downloading $filename from $download"
 
@@ -205,21 +214,25 @@ python user-sync.pex --process-groups --users mapped
 function GetPython ($USTFolder, $DownloadFolder) {
 
     $install = $FALSE
-    $inst_version = 3
     $UST_version = 3
+    $inst_version = $pythonVersion
 
-    $pythonInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Python%'"
-    #$pyver = $pythonInstalled.Version
-    $pyver = ($pythonInstalled.Version | Measure -Max).Maximum
+    $pythonInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Python% (64-bit)'"
 
-    if (-Not ($pythonInstalled) -Or ($pyver -lt [Version]"3.0")  )  {
+    foreach ($v in $pythonInstalled.Version){
+        $vers = $v.Substring(0,3)
 
-        $install = $TRUE
-        $inst_version = 3
+        if ($vers -eq "2.7") {$p2_installed = $true}
+        elseif ($vers -eq "3.6") {$p3_installed = $true}
 
-    } else {
-        Write-Host "Python version $pyver is currently installed".
     }
+
+    if ($pythonVersion -eq "3" -and -not $p3_installed) { $install = $true }
+    elseif ($pythonVersion -eq "2" -and -not $p2_installed) { $install = $true }
+    else {
+        Write-Host "Python version $pythonVersion is already installed...".
+    }
+
 
     if ($install){
         Write-Host "Python $inst_version will be updated/installed...".
@@ -236,12 +249,12 @@ function GetPython ($USTFolder, $DownloadFolder) {
 
         Write-Host "Downloading Python from $pythonURL"
 
-        #Invoke-WebRequest -Uri $pythonURL -OutFile $pythonInstallerOutput
 
         $wc = New-Object net.webclient
         $wc.DownloadFile($pythonURL,$pythonInstallerOutput)
 
         if(Test-Path $pythonInstallerOutput){
+
             #Passive Install of Python. This will show progressbar and error.
             Write-Host "Begin Python Installation"
             $pythonProcess = Start-Process $pythonInstallerOutput -ArgumentList @('/passive', 'InstallAllUsers=1', 'PrependPath=1') -Wait -PassThru
@@ -249,7 +262,7 @@ function GetPython ($USTFolder, $DownloadFolder) {
                 Write-Host "Python Installation Completed"
             }else{
                 if ($inst_version -eq 3){
-                    Write-Host "Error: Python may have failed to install dependencies for this version of windows.`nTry installing Python 2.7 instead..."
+                    Write-Host "Error: Python may have failed to install dependencies for this version of windows.`nTry installing Python 2 instead..."
                 }
 
                 Write-Host "Python Installation Completed/Error with ExitCode: $($pythonProcess.ExitCode)"
@@ -258,15 +271,10 @@ function GetPython ($USTFolder, $DownloadFolder) {
     }
 
 
-     #Set Environment Variable
-     Write-Host "Set PEX_ROOT System Environment Variable"
-     [Environment]::SetEnvironmentVariable("PEX_ROOT", "$env:SystemDrive\PEX", "Machine")
+    #Set Environment Variable
+    Write-Host "Set PEX_ROOT System Environment Variable"
+    [Environment]::SetEnvironmentVariable("PEX_ROOT", "$env:SystemDrive\PEX", "Machine")
 
-    if ($UST_version -eq 2){
-        return "2714"
-    } else {
-        return "363"
-    }
 }
 
 function Cleanup($DownloadFolder) {
@@ -280,40 +288,40 @@ function Cleanup($DownloadFolder) {
 # Main
 if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
     Write-Host "Elevated."
-    Write-Host $pythonVersion
 
-#    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-#
-#    $DownloadFolder = "$env:TEMP\USTDownload"
-#    $USTFolder = SetDirectory
-#    #Create Temp download folder
-#    New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
-#
-#    # Install Process
-#    $Version = GetPython $USTFolder $DownloadFolder
-#    GetUSTFiles $USTFolder $DownloadFolder $Version
-#
-#    # Try loop as connection occasionally fails the first time
-#    while ($true)  {
-#        try {
-#            GetOpenSSL $USTFolder $DownloadFolder
-#            break
-#        }
-#        catch {
-#            Write-Host "Connection failed... retrying... ctrl-c to abort..."
-#        }
-#    }
-#
-#    FinalizeInstallation $USTFolder $DownloadFolder
-#    Cleanup $DownloadFolder
-#
-#    Write-Host "Completed - You can begin to edit configuration files in $USTFolder"
-#    Set-Location -Path $USTFolder
-#
-#    try{
-#        #Open UST Install Folder
-#        & explorer.exe $USTFolder
-#    }catch {}
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+    $DownloadFolder = "$env:TEMP\USTDownload"
+    $USTFolder = SetDirectory
+
+    #Create Temp download folder
+    New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
+
+    # Install Process
+    GetPython $USTFolder $DownloadFolder
+    GetUSTFiles $USTFolder $DownloadFolder $pythonVersion
+
+    # Try loop as connection occasionally fails the first time
+    while ($true)  {
+        try {
+            GetOpenSSL $USTFolder $DownloadFolder
+            break
+        }
+        catch {
+            Write-Host "Connection failed... retrying... ctrl-c to abort..."
+        }
+    }
+
+    FinalizeInstallation $USTFolder $DownloadFolder
+    Cleanup $DownloadFolder
+
+    Write-Host "Completed - You can begin to edit configuration files in $USTFolder"
+    Set-Location -Path $USTFolder
+
+    try{
+        #Open UST Install Folder
+        & explorer.exe $USTFolder
+    }catch {}
 
 }else{
     Write-host "Not elevated. Re-run the script with elevated permission"
