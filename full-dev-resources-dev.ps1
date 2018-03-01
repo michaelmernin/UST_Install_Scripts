@@ -1,3 +1,9 @@
+param([String]$py="3", [Switch]$retry=$false)
+
+if ($py -eq "2"){
+    $pythonVersion = "2"
+} else {$pythonVersion = "3"}
+
 $ErrorActionPreference = "Stop"
 
 function Unzip($zipfile, $outdir){
@@ -68,8 +74,7 @@ function Expand-Archive {
 
 function SetDirectory(){
 
-    $TARGETDIR = ("C:\AdobeSSO\LDAP_test_server");
-
+    $TARGETDIR = (Get-Item -Path ".\" -Verbose).FullName + "\LDAP_test_server"
     Write-Host "Creating directory $TARGETDIR... "
     New-Item -ItemType Directory -Force -Path $TARGETDIR | Out-Null
 
@@ -158,22 +163,23 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-#    $DownloadFolder = "$env:TEMP\LDAPDownload"
-#    $LDAPFolder = SetDirectory
-#    #Create Temp download folder
-#    New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
-#
-#    GetFiles $LDAPFolder $DownloadFolder
-#    $requireRestart = GetJava $DownloadFolder
-#
-#    Cleanup $DownloadFolder
-#    Write-Host "Completed - You can begin to edit configuration files in $LDAPFolder"
+    $DownloadFolder = "$env:TEMP\LDAPDownload"
+    $LDAPFolder = SetDirectory
+    #Create Temp download folder
+    New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
 
-    iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vABrB'))
+    GetFiles $LDAPFolder $DownloadFolder
+    $requireRestart = GetJava $DownloadFolder
 
-#    if ($requireRestart){
-#        Write-Host "`n`n(GUI mode only) You must restart the computer before you can run java -jar on the LDAP server...`n`n" -ForegroundColor Yellow -BackgroundColor DarkGreen
-#    }
+    Cleanup $DownloadFolder
+    Write-Host "Completed - You can begin to edit configuration files in $LDAPFolder"
+
+    $link = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/dev/UST_quick_install_windows.ps1"
+    (New-Object System.Net.WebClient).DownloadFile($link,"inst.ps1"); ./inst.ps1 -py $pythonVersion; rm -Force ./inst.ps1;
+
+    if ($requireRestart){
+        Write-Host "`n`n(GUI mode only) You must restart the computer before you can run java -jar on the LDAP server...`n`n" -ForegroundColor Yellow -BackgroundColor DarkGreen
+    }
 
 }else{
     Write-host "Not elevated. Re-run the script with elevated permission"
