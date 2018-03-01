@@ -34,8 +34,8 @@
       <file leaf-file-name="UST_quick_install_windows.ps1" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/UST_quick_install_windows.ps1">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="326">
-              <caret line="305" column="0" lean-forward="true" selection-start-line="305" selection-start-column="0" selection-end-line="305" selection-end-column="0" />
+            <state relative-caret-position="806">
+              <caret line="335" column="6" lean-forward="true" selection-start-line="335" selection-start-column="6" selection-end-line="335" selection-end-column="6" />
               <folding />
             </state>
           </provider>
@@ -282,12 +282,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1519929716932</updated>
-      <workItem from="1519929719103" duration="11366000" />
+      <workItem from="1519929719103" duration="11419000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="11366000" />
+    <option name="totallyTimeSpent" value="11419000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -427,8 +427,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/UST_quick_install_windows.ps1">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="326">
-          <caret line="305" column="0" lean-forward="true" selection-start-line="305" selection-start-column="0" selection-end-line="305" selection-end-column="0" />
+        <state relative-caret-position="806">
+          <caret line="335" column="6" lean-forward="true" selection-start-line="335" selection-start-column="6" selection-end-line="335" selection-end-column="6" />
           <folding />
         </state>
       </provider>
