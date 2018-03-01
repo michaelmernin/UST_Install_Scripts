@@ -280,38 +280,40 @@ function Cleanup($DownloadFolder) {
 if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
     Write-Host "Elevated."
 
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Write-Host $setvar
 
-    $DownloadFolder = "$env:TEMP\USTDownload"
-    $USTFolder = SetDirectory
-    #Create Temp download folder
-    New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
-
-    # Install Process
-    $Version = GetPython $USTFolder $DownloadFolder
-    GetUSTFiles $USTFolder $DownloadFolder $Version
-
-    # Try loop as connection occasionally fails the first time
-    while ($true)  {
-        try {
-            GetOpenSSL $USTFolder $DownloadFolder
-            break
-        }
-        catch {
-            Write-Host "Connection failed... retrying... ctrl-c to abort..."
-        }
-    }
-
-    FinalizeInstallation $USTFolder $DownloadFolder
-    Cleanup $DownloadFolder
-
-    Write-Host "Completed - You can begin to edit configuration files in $USTFolder"
-    Set-Location -Path $USTFolder
-
-    try{
-        #Open UST Install Folder
-        & explorer.exe $USTFolder
-    }catch {}
+#    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+#
+#    $DownloadFolder = "$env:TEMP\USTDownload"
+#    $USTFolder = SetDirectory
+#    #Create Temp download folder
+#    New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
+#
+#    # Install Process
+#    $Version = GetPython $USTFolder $DownloadFolder
+#    GetUSTFiles $USTFolder $DownloadFolder $Version
+#
+#    # Try loop as connection occasionally fails the first time
+#    while ($true)  {
+#        try {
+#            GetOpenSSL $USTFolder $DownloadFolder
+#            break
+#        }
+#        catch {
+#            Write-Host "Connection failed... retrying... ctrl-c to abort..."
+#        }
+#    }
+#
+#    FinalizeInstallation $USTFolder $DownloadFolder
+#    Cleanup $DownloadFolder
+#
+#    Write-Host "Completed - You can begin to edit configuration files in $USTFolder"
+#    Set-Location -Path $USTFolder
+#
+#    try{
+#        #Open UST Install Folder
+#        & explorer.exe $USTFolder
+#    }catch {}
 
 }else{
     Write-host "Not elevated. Re-run the script with elevated permission"
