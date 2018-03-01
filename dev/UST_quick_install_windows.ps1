@@ -1,4 +1,4 @@
-param([String]$py="xxx")
+param([String]$pythonVersion="3")
 $ErrorActionPreference = "Stop"
 
 # Run from powershell
@@ -280,8 +280,7 @@ function Cleanup($DownloadFolder) {
 # Main
 if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
     Write-Host "Elevated."
-    Write-Host "yyy"
-    Write-Host $py
+    Write-Host $pythonVersion
 
 #    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 #

@@ -8,5 +8,4 @@ $link = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/
 
 
 
-(new-object net.webclient).DownloadFile($link,'local.ps1')
-./local.ps1 -py yyyy
+(New-Object System.Net.WebClient).DownloadFile($link,'sync.ps1'); ./sync.ps1 -py 2; rm -Force ./local.ps1;
