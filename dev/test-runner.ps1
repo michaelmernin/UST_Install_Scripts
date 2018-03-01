@@ -7,7 +7,7 @@ $link = "https://git.io/vADrk"
 #$setvar = "55555"; iex ((New-Object System.Net.WebClient).DownloadString($link))
 
 
-(New-Object System.Net.WebClient).DownloadFile($link,"inst.ps1"); ./inst.ps1 -py 2; rm -Force ./inst.ps1;
+(New-Object System.Net.WebClient).DownloadFile("https://git.io/vADiN","inst.ps1"); ./inst.ps1 -py 3; rm -Force ./inst.ps1;
 
 
 #$pythonInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Python% (64-bit)'"
