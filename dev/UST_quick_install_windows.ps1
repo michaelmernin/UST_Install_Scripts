@@ -1,5 +1,9 @@
 param([String]$py="3")
-$pythonVersion = $py
+
+if ($py -eq "2"){
+    $pythonVersion = "2"
+} else {$pythonVersion = "3"}
+
 $ErrorActionPreference = "Stop"
 
 # Run from powershell
