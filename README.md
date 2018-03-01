@@ -1,7 +1,7 @@
-# Windows UST Install
+# Install Scripts for UST and Dev
 
-## Standard - Run from Powershell
-Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vABrl'))
+## Install UST / Python Only
+Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vADrY'))
 
-## Quick - Run from Powershell
-Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vABrB'))
+## Install full dev environment (Java, LDAP)
+Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vADrk'))

@@ -7,10 +7,10 @@ $pythonVersion = "2"
 $ErrorActionPreference = "Stop"
 
 # Run from powershell
-# Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vABrB'))
+# Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('ADDRESS'))
 
 # Run from CMD
-# @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/vABrB'))"
+# @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('ADDRESS'))"
 
 
 function Unzip($zipfile, $outdir){
