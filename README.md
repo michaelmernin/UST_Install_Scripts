@@ -1,11 +1,10 @@
 # Install Scripts for UST and Dev
 
 ### Install UST / Python Only:
-<code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vADrY","inst.ps1"); ./inst.ps1 <b>-py 2</b>; rm -Force ./inst.ps1;</code>
+<code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vADrY","inst.ps1"); ./inst.ps1 -py 2; rm -Force ./inst.ps1;</code>
 
 ### Install full dev environment (Java, LDAP):
-<code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vADrk","inst.ps1"); ./inst.ps1 <b>-py 2</b>; rm -Force ./inst.ps1;</code>
-Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString(''))
+<code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vADrk","inst.ps1"); ./inst.ps1 -py 2; rm -Force ./inst.ps1;</code>
 
 ### Exection notes:
 Development installs the dev tools first, and automatically calls the UST script upon finishing -- no need to use both!!
