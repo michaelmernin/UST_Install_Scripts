@@ -1,8 +1,8 @@
 #param([String]$py="xxx")
 $ErrorActionPreference = "Stop"
 
-$link = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/full-dev-resources.ps1"
-#$link = "https://git.io/vADrk"
+#$link = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/full-dev-resources.ps1"
+$link = "https://git.io/vADrk"
 #Write-Host $py
 #$setvar = "55555"; iex ((New-Object System.Net.WebClient).DownloadString($link))
 
