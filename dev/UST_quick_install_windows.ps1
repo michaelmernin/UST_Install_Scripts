@@ -316,12 +316,12 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     Cleanup $DownloadFolder
 
     Write-Host "Completed - You can begin to edit configuration files in $USTFolder"
-    Set-Location -Path $USTFolder
-
-    try{
-        #Open UST Install Folder
-        & explorer.exe $USTFolder
-    }catch {}
+#    Set-Location -Path $USTFolder
+#
+#    try{
+#        #Open UST Install Folder
+#        & explorer.exe $USTFolder
+#    }catch {}
 
 }else{
     Write-host "Not elevated. Re-run the script with elevated permission"
