@@ -88,11 +88,12 @@ function GetJava ($DownloadFolder){
 
 
     $javaInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Java%'"
-    $jv = $javaInstalled.Version
 
-    if ($javInstalled){
-        Write-Host "Java $jv already installed! Skipping...  "
+    if ($javaInstalled){
+        Write-Host "Java already installed! Skipping...  "
+        return $false
     }
+
 
     $filename = $JREURL.Split('/')[-1]
     $javaExecutable = "$DownloadFolder\$filename"
@@ -101,21 +102,26 @@ function GetJava ($DownloadFolder){
     Write-Host "Downloading $filename from $JREURL"
 
     $wc = New-Object net.webclient
-    $wc.DownloadFile($JREURL,$javaExecutable)
+    $wc.DownloadFile($JREURL, $javaExecutable)
 
-    if(Test-Path $javaExecutable){
+    if (Test-Path $javaExecutable)
+    {
         Write-Host "Begin Java Installation"
         $javaProcess = Start-Process $javaExecutable -ArgumentList @('/s') -Wait -PassThru
-        if($javaProcess.ExitCode -eq 0){
+        if ($javaProcess.ExitCode -eq 0)
+        {
             Write-Host "Java Installation Completed"
             [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Java\jre1.8.0_161\bin", [EnvironmentVariableTarget]::Machine)
             return $true
 
-        }else{
-            Write-Host "Python Installation Completed/Error with ExitCode: $($javaProcess.ExitCode)"
+        }
+        else
+        {
+            Write-Host "Python Installation Completed/Error with ExitCode: $( $javaProcess.ExitCode )"
         }
     }
     return $false
+
 }
 
 
@@ -126,6 +132,7 @@ function GetFiles ($LDAPFolder, $DownloadFolder) {
     foreach($download in $DownloadList){
         $filename = $download.Split('/')[-1]
         $downloadfile = "$DownloadFolder\$filename"
+
         #Download file
         Write-Host "Downloading $filename from $download"
 
@@ -166,16 +173,15 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
 
     $DownloadFolder = "$env:TEMP\LDAPDownload"
     $LDAPFolder = SetDirectory
+
     #Create Temp download folder
     New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
-
-    GetJava ($DownloadFolder)
 
     GetFiles $LDAPFolder $DownloadFolder
     $requireRestart = GetJava $DownloadFolder
 
     Cleanup $DownloadFolder
-    Write-Host "Completed - You can begin to edit configuration files in $LDAPFolder"
+    Write-Host "Completed - You can run the server from $LDAPFolder"
 
     $link = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/UST_quick_install_windows.ps1"
     (New-Object System.Net.WebClient).DownloadFile($link,"inst.ps1"); ./inst.ps1 -py $pythonVersion; rm -Force ./inst.ps1;
