@@ -323,7 +323,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     "
 
     printColor $introbanner White
-    banner -message "User Sync Tool Quick Install" -color White
+    banner -message "User Sync Tool Quick Install" -color Cyan
     Write-Host ""
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12

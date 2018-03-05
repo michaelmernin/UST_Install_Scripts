@@ -178,7 +178,7 @@ function Cleanup($DownloadFolder) {
 # Main
 if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
 
-    $introbanner = "`n
+    $introbanner = "
   _   _ ___ _____      ___               ___
  | | | / __|_   _|    |   \ _____ __    | _ \___ ___ ___ _  _ _ _ __ ___ ___
  | |_| \__ \ | |      | |) / -_) V /    |   / -_|_-</ _ \ || | '_/ _/ -_|_-<
@@ -186,7 +186,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     "
 
     printColor $introbanner Blue
-    banner -message "UST Dev Resources Install" -color White
+    banner -message "UST Dev Resources Install" -color Blue
     Write-Host ""
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
