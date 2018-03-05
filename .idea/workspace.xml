@@ -34,8 +34,8 @@
       <file leaf-file-name="UST_quick_install_windows.ps1" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/UST_quick_install_windows.ps1">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="118">
-              <caret line="292" column="69" lean-forward="true" selection-start-line="292" selection-start-column="69" selection-end-line="292" selection-end-column="69" />
+            <state relative-caret-position="406">
+              <caret line="310" column="32" lean-forward="false" selection-start-line="310" selection-start-column="32" selection-end-line="310" selection-end-column="32" />
               <folding />
             </state>
           </provider>
@@ -141,6 +141,9 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="AndroidView" />
+      <pane id="PackagesPane" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -157,10 +160,7 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="AndroidView" />
       <pane id="Scratches" />
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -171,6 +171,9 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\Repositories\Perficient\Adobe\UST_Install_Scripts\dev" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\repos\UST_Install_Scripts" />
     </key>
@@ -282,17 +285,16 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1519929716932</updated>
-      <workItem from="1519929719103" duration="11511000" />
-      <workItem from="1520001306346" duration="600000" />
+      <workItem from="1519929719103" duration="11419000" />
+      <workItem from="1520049080973" duration="663000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="12111000" />
+    <option name="totallyTimeSpent" value="12082000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -306,7 +308,7 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15364583" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15364583" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Statistic" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Archetypes" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -465,8 +467,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/UST_quick_install_windows.ps1">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="118">
-          <caret line="292" column="69" lean-forward="true" selection-start-line="292" selection-start-column="69" selection-end-line="292" selection-end-column="69" />
+        <state relative-caret-position="406">
+          <caret line="310" column="32" lean-forward="false" selection-start-line="310" selection-start-column="32" selection-end-line="310" selection-end-column="32" />
           <folding />
         </state>
       </provider>

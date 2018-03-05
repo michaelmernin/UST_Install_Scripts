@@ -6,36 +6,77 @@ if ($py -eq "2"){
 
 $ErrorActionPreference = "Stop"
 
-# Run from powershell
-# Set-ExecutionPolicy Bypass -Scope Process; iex ((New-Object System.Net.WebClient).DownloadString('ADDRESS'))
+# URL's Combined for convenience here
+$7zURL = 'http://www.7-zip.org/a/7za920.zip'
+$USTPython2URL = "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.2/user-sync-v2.2.2-windows-py2714.tar.gz"
+$USTPython3URL = "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.2/user-sync-v2.2.2-windows-py363.tar.gz"
+$USTExamplesURL = "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.1/example-configurations.tar.gz"
+$openSSLBinURL = "https://indy.fulgan.com/SSL/openssl-1.0.2l-x64_86-win64.zip"
+$adobeIOCertScriptURL = "https://raw.githubusercontent.com/bhunut-adobe/user-sync-quick-install/master/adobe_io_certgen.ps1"
+$Python2URL = "https://www.python.org/ftp/python/2.7.14/python-2.7.14.amd64.msi"
+$Python3URL = "https://www.python.org/ftp/python/3.6.4/python-3.6.4-amd64.exe"
 
-# Run from CMD
-# @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('ADDRESS'))"
 
 
-function Unzip($zipfile, $outdir){
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    $archive = [System.IO.Compression.ZipFile]::OpenRead($zipfile)
-    foreach ($entry in $archive.Entries)
-    {
-        $entryTargetFilePath = [System.IO.Path]::Combine($outdir, $entry.FullName)
-        $entryDir = [System.IO.Path]::GetDirectoryName($entryTargetFilePath)
 
-        #Ensure the directory of the archive entry exists
-        if(!(Test-Path $entryDir )){
-            New-Item -ItemType Directory -Path $entryDir | Out-Null
-        }
+function printColor ($msg, $color) {
+    Write-Host $msg -ForegroundColor $color
+}
 
-        #If the entry is not a directory entry, then extract entry
-        if(!$entryTargetFilePath.EndsWith("\")){
-            [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $entryTargetFilePath, $true);
+
+function banner {
+    Param(
+        [String]$message,
+        [String]$type="Info",
+        [String]$color="Green"
+    )
+
+    $message = If ($message) {$message} Else {$type}
+
+    if ($color -eq "Green"){
+        switch ($type) {
+            "Warning" { $color = "Yellow"; break }
+            "Error" { $color = "Red"; break }
         }
     }
 
-    $archive.Dispose()
+    $msgChar = "="
+    $charLen = 20
+
+    $messageTop = ("`n" + $msgChar*$charLen + " ${message} " + $msgChar*$charLen)
+    $messageBottom = $msgChar*($messageTop.length-1)
+
+    printColor $messageTop $color
 }
 
-function Expand-Archive {
+
+function Get7Zip {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+    $7zipTempPath = "$env:TEMP\7zip"
+
+    if (-not (Test-Path $7zipTempPath))
+    {
+        #Create Temporary 7zip folder
+        Write-Host "Creating temp 7zip Path - $7zipTempPath"
+        New-Item -Path $7zipTempPath -ItemType 'Directory' -Force | Out-Null
+
+        $7Zfilename = $7zURL.Split('/')[-1]
+        $7zDownload = "$7zipTempPath\$7Zfilename"
+
+        #Download 7z Command Line from 7-zip.org
+        Write-Host "- Downloading 7-zip Standalone ($7zURL)"
+
+        (New-Object net.webclient).DownloadFile($7zURL, $7zDownload)
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($7zDownload, $7zipTempPath)
+    } else {
+        Write-Host "7 zip already found! Skipping..."
+    }
+    return $7zipTempPath
+
+}
+
+function Expand-Archive() {
     param(
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
         [ValidateScript({Test-Path -path $_})]
@@ -44,35 +85,9 @@ function Expand-Archive {
         $ArchiveType
     )
 
-    $7zipTempPath = "$env:TEMP\7zip"
-
-    if( -not (Test-Path "$7zipTempPath\7za.exe")){
-        #Create Temporary 7zip folder
-        Write-Host "Creating temp 7zip Path - $7zipTempPath"
-        New-Item -Path $7zipTempPath -ItemType 'Directory' -Force | Out-Null
-
-        #Latest stable version of 7-zip standalone 9.2.0
-        $7zURL = 'http://www.7-zip.org/a/7za920.zip'
-        $7Zfilename = $7zURL.Split('/')[-1]
-        $7zDownload = "$7zipTempPath\$7Zfilename"
-
-        #Download 7z Command Line from 7-zip.org
-        Write-Host "Downloading 7-zip Standalone ($7zURL)"
-        #Invoke-WebRequest -Uri $7zURL -OutFile $7zDownload
-
-        $wc = New-Object net.webclient
-        $wc.DownloadFile($7zURL,$7zDownload)
-
-        if(Test-Path $7zDownload){
-            #Extract downloaded 7-zip to 7-zip temp folder
-            Unzip -zipfile $7zDownload -outdir $7zipTempPath
-        }
-
-    }
-    #Unzip -zipfile $openSSLOutputPath -outdir $openSSLUSTFolder
-
     if ($ArchiveType -eq "tar")    {
         Start-Process cmd.exe -ArgumentList ("/c $7zipTempPath\7za.exe x $Path -so  | $7zipTempPath\7za.exe x -y -si -aoa -ttar -o`"$OutPut`"") -Wait
+
     } else {
         Start-Process cmd.exe -ArgumentList ("/c $7zipTempPath\7za.exe x $Path -y -tzip -aoa -o`"$OutPut`"") -Wait
     }
@@ -91,22 +106,22 @@ function SetDirectory(){
 function GetUSTFiles ($USTFolder, $DownloadFolder) {
 
     if ($pythonVersion -eq 2){
-        $URL = "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.2/user-sync-v2.2.2-windows-py2714.tar.gz"
+        $URL = $USTPython2URL
     } else {
-        $URL = "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.2/user-sync-v2.2.2-windows-py363.tar.gz"
+        $URL = $USTPython3URL
     }
 
     #Download UST 2.2.2 and Extract
     $USTdownloadList = @()
     $USTdownloadList += $URL
-    $USTdownloadList += "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.1/example-configurations.tar.gz"
+    $USTdownloadList += $USTExamplesURL
 
     foreach($download in $USTdownloadList){
         $filename = $download.Split('/')[-1]
         $downloadfile = "$DownloadFolder\$filename"
 
         #Download file
-        Write-Host "Downloading $filename from $download"
+        Write-Host "- Downloading $filename from $download"
 
         #Invoke-WebRequest -Uri $download -OutFile $downloadfile
 
@@ -115,7 +130,7 @@ function GetUSTFiles ($USTFolder, $DownloadFolder) {
 
         if(Test-Path $downloadfile){
             #Extract downloaded file to UST Folder
-            Write-Host "Extracting $downloadfile to $USTFolder"
+            Write-Host "- Extracting $downloadfile to $USTFolder"
             Expand-Archive -Path $downloadfile -OutPut $USTFolder -ArchiveType tar
         }
     }
@@ -138,35 +153,32 @@ function GetUSTFiles ($USTFolder, $DownloadFolder) {
 function GetOpenSSL ($USTFolder, $DownloadFolder) {
 
     #Download OpenSSL 1.0.2l binary for Windows and extract to utils folder
-    $openSSLBinURL = "https://indy.fulgan.com/SSL/openssl-1.0.2l-x64_86-win64.zip"
     $openSSLBinFileName = $openSSLBinURL.Split('/')[-1]
     $openSSLOutputPath = "$DownloadFolder\$openSSLBinFileName"
     $openSSLUSTFolder = "$USTFolder\Utils\openSSL"
-    Write-Host "Downloading OpenSSL Win32 Binary from $openSSLBinURL"
+    Write-Host "- Downloading OpenSSL Win32 Binary from $openSSLBinURL"
     #Invoke-WebRequest -Uri $openSSLBinURL -OutFile $openSSLOutputPath
 
     $wc = New-Object net.webclient
     $wc.DownloadFile($openSSLBinURL,$openSSLOutputPath)
 
     if(Test-Path $openSSLOutputPath){
-        #Extracting downloaded file to UST folder.
-        Write-Host "Extracting $openSSLBinFileName to $openSSLUSTFolder"
+        #- Extracting downloaded file to UST folder.
+        Write-Host "- Extracting $openSSLBinFileName to $openSSLUSTFolder"
         try{
             New-Item -Path $openSSLUSTFolder -ItemType Directory -Force | Out-Null
-            #Unzip -zipfile $openSSLOutputPath -outdir $openSSLUSTFolder
             Expand-Archive -Path $openSSLOutputPath -OutPut $openSSLUSTFolder -ArchiveType zip
             Write-Host "Completed extracting $openSSLBinFileName to $openSSLUSTFolder"
         }catch{
-
             Write-Error "Unable to extract openSSL"
         }
     }
 
-    #    #Download Default Openssl.cfg configuration file
+    #Download Default Openssl.cfg configuration file
     $openSSLConfigURL = 'http://web.mit.edu/crypto/openssl.cnf'
     $openSSLConfigFileName = $openSSLConfigURL.Split('/')[-1]
     $openSSLConfigOutputPath = "$USTFolder\Utils\openSSL\$openSSLConfigFileName"
-    Write-Host "Downloading default openssl.cnf config file from $openSSLConfigURL"
+    Write-Host "- Downloading default openssl.cnf config file from $openSSLConfigURL"
     #Invoke-WebRequest -Uri $openSSLConfigURL -OutFile $openSSLConfigOutputPath
 
     $wc = New-Object net.webclient
@@ -177,10 +189,9 @@ function GetOpenSSL ($USTFolder, $DownloadFolder) {
 function FinalizeInstallation ($USTFolder, $DownloadFolder) {
 
     #Download Adobe.IO Cert generation Script and put it into utils\openSSL folder
-    $adobeIOCertScriptURL = "https://raw.githubusercontent.com/bhunut-adobe/user-sync-quick-install/master/adobe_io_certgen.ps1"
     $adobeIOCertScript = $adobeIOCertScriptURL.Split('/')[-1]
     $adobeIOCertScriptOutputPath = "$USTFolder\Utils\openSSL\$adobeIOCertScript"
-    Write-Host "Downloading Adobe.IO Cert Generation Script from $adobeIOCertScriptURL"
+    Write-Host "- Downloading Adobe.IO Cert Generation Script from $adobeIOCertScriptURL"
 
     $wc = New-Object net.webclient
     $wc.DownloadFile($adobeIOCertScriptURL,$adobeIOCertScriptOutputPath)
@@ -220,14 +231,20 @@ function GetPython ($USTFolder, $DownloadFolder) {
     $UST_version = 3
     $inst_version = $pythonVersion
 
-    $pythonInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Python% (64-bit)'"
+    $UninstallKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    $reg = [microsoft.win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$env:computername)
+    $subkeys = $reg.OpenSubkey($UninstallKey).GetSubkeyNames()
 
-    foreach ($v in $pythonInstalled.Version){
-        $vers = $v.Substring(0,3)
-
-        if ($vers -eq "2.7") {$p2_installed = $true}
-        elseif ($vers -eq "3.6") {$p3_installed = $true}
-
+    foreach ($k in $subkeys){
+        $thisKey = $reg.OpenSubKey("${UninstallKey}\\${k}")
+        if ($thisKey.GetValue("DisplayName") | Select-String -pattern "(Python).+(\(64-Bit\))" -Quiet)    {
+            $thisKey.GetValue("DisplayVersion") | Select-String -pattern "((3.6)|(2.7))(.)" | foreach-object {
+                switch ($_.Matches[0].Groups[1].Value) {
+                    "2.7" {$p2_installed = $true; break}
+                    "3.6" {$p3_installed = $true; break}
+                }
+            }
+        }
     }
 
     if ($pythonVersion -eq "3" -and -not $p3_installed) { $install = $true }
@@ -236,21 +253,20 @@ function GetPython ($USTFolder, $DownloadFolder) {
         Write-Host "Python version $pythonVersion is already installed...".
     }
 
-
     if ($install){
         Write-Host "Python $inst_version will be updated/installed...".
         if ($inst_version -eq 2){
-            $pythonURL = "https://www.python.org/ftp/python/2.7.14/python-2.7.14.amd64.msi"
+            $pythonURL = $Python2URL
             $UST_version = 2
         } else {
-            $pythonURL = "https://www.python.org/ftp/python/3.6.4/python-3.6.4-amd64.exe"
+            $pythonURL = $Python3URL
             $UST_version = 3
         }
 
         $pythonInstaller = $pythonURL.Split('/')[-1]
         $pythonInstallerOutput = "$DownloadFolder\$pythonInstaller"
 
-        Write-Host "Downloading Python from $pythonURL"
+        Write-Host "- Downloading Python from $pythonURL"
 
 
         $wc = New-Object net.webclient
@@ -259,18 +275,19 @@ function GetPython ($USTFolder, $DownloadFolder) {
         if(Test-Path $pythonInstallerOutput){
 
             #Passive Install of Python. This will show progressbar and error.
-            Write-Host "Begin Python Installation"
+            Write-Host "- Begin Python Installation"
             $pythonProcess = Start-Process $pythonInstallerOutput -ArgumentList @('/passive', 'InstallAllUsers=1', 'PrependPath=1') -Wait -PassThru
             if($pythonProcess.ExitCode -eq 0){
                 Write-Host "Python Installation Completed"
             }else{
                 if ($inst_version -eq 3){
-                    Write-Host "Error: Python may have failed to install dependencies for this version of windows.`nUpdate windows or try installing Python 2 instead..."
+                    Write-Host "Error: Python may have failed to install Windows updates for this version of Windows.`nUpdate Windows manually or try installing Python 2 instead..."
 
                     if ($retry) {
                         Write-Host "Retry flag specified, defaulting to install Python 2.7 for compatability.... "
                         $pythonVersion = "2"
                         GetPython ($USTFolder, $DownloadFolder)
+                        return
                     }
 
                 }
@@ -280,7 +297,6 @@ function GetPython ($USTFolder, $DownloadFolder) {
         }
     }
 
-
     #Set Environment Variable
     Write-Host "Set PEX_ROOT System Environment Variable"
     [Environment]::SetEnvironmentVariable("PEX_ROOT", "$env:SystemDrive\PEX", "Machine")
@@ -288,7 +304,7 @@ function GetPython ($USTFolder, $DownloadFolder) {
 }
 
 function Cleanup($DownloadFolder) {
-    #Cleanup
+
     #Delete Temp DownloadFolder for UST, Python and Config files
     Remove-Item -Path $DownloadFolder -Recurse -Confirm:$false -Force
     #Delete 7-zip temp folder
@@ -297,41 +313,77 @@ function Cleanup($DownloadFolder) {
 
 # Main
 if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
-    Write-Host "Elevated."
+
+    $introbanner = "`n
+  _   _                 ___
+ | | | |___ ___ _ _    / __|_  _ _ _  __
+ | |_| (_-</ -_) '_|   \__ \ || | ' \/ _|
+  \___//__/\___|_|     |___/\_, |_||_\__|
+                            |__/
+    "
+
+    printColor $introbanner White
+    banner -message "User Sync Tool Quick Install" -color White
+    Write-Host ""
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
     $DownloadFolder = "$env:TEMP\USTDownload"
+
+    banner -message "Creating UST directory"
     $USTFolder = SetDirectory
 
     #Create Temp download folder
     New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
 
     # Install Process
-    GetPython $USTFolder $DownloadFolder
-    GetUSTFiles $USTFolder $DownloadFolder $pythonVersion
+    banner -message "Install 7 zip x64"
+    $7zipTempPath = Get7Zip
+
+    try    {
+        banner -message "Install Python $pythonVersion"
+        GetPython $USTFolder $DownloadFolder
+    } catch {
+        banner -type Error
+        Write-Host "Failed to install Python with error:"
+        Write-Host $PSItem.ToString()
+    }
+
+    try    {
+        banner -message "Download UST Files"
+        GetUSTFiles $USTFolder $DownloadFolder $pythonVersion
+    } catch {
+        banner -type Error
+        Write-Host "Failed to download UST resources with error:"
+        Write-Host $PSItem.ToString()
+    }
 
     # Try loop as connection occasionally fails the first time
+    banner -message "Download OpenSSL"
+    $i = 0
     while ($true)  {
+        $i++
         try {
             GetOpenSSL $USTFolder $DownloadFolder
             break
         }
         catch {
-            Write-Host "Connection failed... retrying... ctrl-c to abort..."
+            printColor "Connection failed... retrying... ctrl-c to abort..." Yellow
+        }
+        if ($i -eq 5) {
+            banner -type Warning
+            printColor "Open SSL failed to download... retry or download manually..." Red
+            break
         }
     }
 
     FinalizeInstallation $USTFolder $DownloadFolder
     Cleanup $DownloadFolder
 
-    Write-Host "Completed - You can begin to edit configuration files in $USTFolder"
-    #    Set-Location -Path $USTFolder
-    #
-    #    try{
-    #        #Open UST Install Folder
-    #        & explorer.exe $USTFolder
-    #    }catch {}
+    banner -message "Install Finish" -color Blue
+    Write-Host "Completed - You can begin to edit configuration files in:"
+    printColor $USTFolder Green
+    Write-Host "`n"
 
 }else{
     Write-host "Not elevated. Re-run the script with elevated permission"

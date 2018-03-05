@@ -6,29 +6,71 @@ if ($py -eq "2"){
 
 $ErrorActionPreference = "Stop"
 
-function Unzip($zipfile, $outdir){
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    $archive = [System.IO.Compression.ZipFile]::OpenRead($zipfile)
-    foreach ($entry in $archive.Entries)
-    {
-        $entryTargetFilePath = [System.IO.Path]::Combine($outdir, $entry.FullName)
-        $entryDir = [System.IO.Path]::GetDirectoryName($entryTargetFilePath)
+# URL's Combined for convenience here
+$JREURL = "https://github.com/janssenda/vm_resources/raw/master/jre-8u161-windows-x64.exe"
+$7zURL = 'http://www.7-zip.org/a/7za920.zip'
+$VMResourceURL = "https://github.com/janssenda/vm_resources/raw/master/vm_common_resources.tar.gz"
+$USTScriptURL = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/UST_quick_install_windows.ps1"
 
-        #Ensure the directory of the archive entry exists
-        if(!(Test-Path $entryDir )){
-            New-Item -ItemType Directory -Path $entryDir | Out-Null
-        }
+function printColor ($msg, $color) {
+    Write-Host $msg -ForegroundColor $color
+}
 
-        #If the entry is not a directory entry, then extract entry
-        if(!$entryTargetFilePath.EndsWith("\")){
-            [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $entryTargetFilePath, $true);
+
+function banner {
+    Param(
+        [String]$message,
+        [String]$type="Info",
+        [String]$color="Green"
+    )
+
+    $message = If ($message) {$message} Else {$type}
+
+    if ($color -eq "Green"){
+        switch ($type) {
+            "Warning" { $color = "Yellow"; break }
+            "Error" { $color = "Red"; break }
         }
     }
 
-    $archive.Dispose()
+    $msgChar = "="
+    $charLen = 20
+
+    $messageTop = ("`n" + $msgChar*$charLen + " ${message} " + $msgChar*$charLen)
+    $messageBottom = $msgChar*($messageTop.length-1)
+
+    printColor $messageTop $color
 }
 
-function Expand-Archive {
+
+function Get7Zip {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+    $7zipTempPath = "$env:TEMP\7zip"
+
+    if (-not (Test-Path $7zipTempPath))
+    {
+        #Create Temporary 7zip folder
+        Write-Host "Creating temp 7zip Path - $7zipTempPath"
+        New-Item -Path $7zipTempPath -ItemType 'Directory' -Force | Out-Null
+
+        $7Zfilename = $7zURL.Split('/')[-1]
+        $7zDownload = "$7zipTempPath\$7Zfilename"
+
+        #Download 7z Command Line from 7-zip.org
+        Write-Host "- Downloading 7-zip Standalone ($7zURL)"
+
+        (New-Object net.webclient).DownloadFile($7zURL, $7zDownload)
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($7zDownload, $7zipTempPath)
+    } else {
+        Write-Host "7 zip already found! Skipping..."
+    }
+    return $7zipTempPath
+
+}
+
+
+function Expand-Archive() {
     param(
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
         [ValidateScript({Test-Path -path $_})]
@@ -36,33 +78,6 @@ function Expand-Archive {
         $OutPut,
         $ArchiveType
     )
-
-    $7zipTempPath = "$env:TEMP\7zip"
-
-    if( -not (Test-Path "$7zipTempPath\7za.exe")){
-        #Create Temporary 7zip folder
-        Write-Host "Creating temp 7zip Path - $7zipTempPath"
-        New-Item -Path $7zipTempPath -ItemType 'Directory' -Force | Out-Null
-
-        #Latest stable version of 7-zip standalone 9.2.0
-        $7zURL = 'http://www.7-zip.org/a/7za920.zip'
-        $7Zfilename = $7zURL.Split('/')[-1]
-        $7zDownload = "$7zipTempPath\$7Zfilename"
-
-        #Download 7z Command Line from 7-zip.org
-        Write-Host "Downloading 7-zip Standalone ($7zURL)"
-
-        $wc = New-Object net.webclient
-        $wc.DownloadFile($7zURL,$7zDownload)
-
-        #Invoke-WebRequest -Uri $7zURL -OutFile $7zDownload
-
-        if(Test-Path $7zDownload){
-            #Extract downloaded 7-zip to 7-zip temp folder
-            Unzip -zipfile $7zDownload -outdir $7zipTempPath
-        }
-
-    }
 
     if ($ArchiveType -eq "tar")    {
         Start-Process cmd.exe -ArgumentList ("/c $7zipTempPath\7za.exe x $Path -so  | $7zipTempPath\7za.exe x -y -si -aoa -ttar -o`"$OutPut`"") -Wait
@@ -84,10 +99,16 @@ function SetDirectory(){
 
 
 function GetJava ($DownloadFolder){
-    $JREURL = "https://github.com/janssenda/vm_resources/raw/master/jre-8u161-windows-x64.exe"
+    $UninstallKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    $reg = [microsoft.win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$env:computername)
+    $subkeys = $reg.OpenSubkey($UninstallKey).GetSubkeyNames()
 
-
-    $javaInstalled = Get-CimInstance -ClassName 'Win32_Product' -Filter "Name like 'Java%'"
+    foreach ($k in $subkeys){
+        $thisKey = $reg.OpenSubKey("${UninstallKey}\\${k}")
+        if ($thisKey.GetValue("DisplayName") | Select-String -pattern "(Java).+" -Quiet)    {
+            $javaInstalled = $true
+        }
+    }
 
     if ($javaInstalled){
         Write-Host "Java already installed! Skipping...  "
@@ -99,54 +120,43 @@ function GetJava ($DownloadFolder){
     $javaExecutable = "$DownloadFolder\$filename"
 
     #Download file
-    Write-Host "Downloading $filename from $JREURL"
+    Write-Host "- Downloading $filename from $JREURL"
 
-    $wc = New-Object net.webclient
-    $wc.DownloadFile($JREURL, $javaExecutable)
+    (New-Object net.webclient).DownloadFile($JREURL, $javaExecutable)
 
-    if (Test-Path $javaExecutable)
-    {
-        Write-Host "Begin Java Installation"
+    if (Test-Path $javaExecutable){
+        Write-Host "- Begin Java Installation"
         $javaProcess = Start-Process $javaExecutable -ArgumentList @('/s') -Wait -PassThru
-        if ($javaProcess.ExitCode -eq 0)
-        {
+        if ($javaProcess.ExitCode -eq 0)        {
             Write-Host "Java Installation Completed"
             [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Java\jre1.8.0_161\bin", [EnvironmentVariableTarget]::Machine)
             return $true
-
         }
-        else
-        {
-            Write-Host "Python Installation Completed/Error with ExitCode: $( $javaProcess.ExitCode )"
+        else        {
+            Write-Host "Java Installation Completed/Error with ExitCode: $( $javaProcess.ExitCode )"
         }
     }
     return $false
 
 }
 
-
 function GetFiles ($LDAPFolder, $DownloadFolder) {
     $DownloadList = @()
-    $DownloadList += "https://github.com/janssenda/vm_resources/raw/master/vm_common_resources.tar.gz"
+    $DownloadList += $VMResourceURL
 
     foreach($download in $DownloadList){
+
         $filename = $download.Split('/')[-1]
         $downloadfile = "$DownloadFolder\$filename"
 
         #Download file
-        Write-Host "Downloading $filename from $download"
+        Write-Host "- Downloading $filename from $download"
 
-        $wc = New-Object net.webclient
-        $wc.DownloadFile($download,$downloadfile)
+        (New-Object net.webclient).DownloadFile($download,$downloadfile)
 
-        #Invoke-WebRequest -Uri $download -OutFile $downloadfile
+        Write-Host "- Extracting $downloadfile to $LDAPFolder"
+        Expand-Archive -Path $downloadfile -OutPut $LDAPFolder -ArchiveType tar
 
-
-        if(Test-Path $downloadfile){
-            #Extract downloaded file to UST Folder
-            Write-Host "Extracting $downloadfile to $LDAPFolder"
-            Expand-Archive -Path $downloadfile -OutPut $LDAPFolder -ArchiveType tar
-        }
     }
 
 }
@@ -167,31 +177,67 @@ function Cleanup($DownloadFolder) {
 
 # Main
 if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
-    Write-Host "Elevated."
+
+    $introbanner = "`n
+  _   _ ___ _____      ___               ___
+ | | | / __|_   _|    |   \ _____ __    | _ \___ ___ ___ _  _ _ _ __ ___ ___
+ | |_| \__ \ | |      | |) / -_) V /    |   / -_|_-</ _ \ || | '_/ _/ -_|_-<
+  \___/|___/ |_|      |___/\___|\_/     |_|_\___/__/\___/\_,_|_| \__\___/__/
+    "
+
+    printColor $introbanner Blue
+    banner -message "UST Dev Resources Install" -color White
+    Write-Host ""
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+    banner -message "Creating tools directory"
     $DownloadFolder = "$env:TEMP\LDAPDownload"
     $LDAPFolder = SetDirectory
 
     #Create Temp download folder
     New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
+    banner -message "Install 7 zip x64"
+    $7zipTempPath = Get7Zip
 
-    GetFiles $LDAPFolder $DownloadFolder
-    $requireRestart = GetJava $DownloadFolder
+    try    {
+        banner -message "Download VM Resources"
+        GetFiles $LDAPFolder $DownloadFolder
+    } catch {
+        Write-Host "Failed to download resources with error:"
+        Write-Host $PSItem.ToString()
+    }
+
+    try    {
+        banner -message "Install Java"
+        $requireRestart = GetJava $DownloadFolder
+    } catch {
+        Write-Host "Failed to install Java with error:"
+        Write-Host $PSItem.ToString()
+    }
 
     Cleanup $DownloadFolder
-    Write-Host "Completed - You can run the server from $LDAPFolder"
 
-    $link = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/UST_quick_install_windows.ps1"
-    (New-Object System.Net.WebClient).DownloadFile($link,"instd.ps1"); ./instd.ps1 -py $pythonVersion; rm -Force ./instd.ps1;
+    banner -message "Install Finish" -color Blue
+    Write-Host "Completed - You can run the server from:"
+    printColor $LDAPFolder Green
+
+
+
+    if ($retry){
+        (New-Object System.Net.WebClient).DownloadFile($USTScriptURL,"instd.ps1"); ./instd.ps1 -py $pythonVersion -retry; rm -Force ./instd.ps1;
+        #./UST_quick_install_windows-dev.ps1 -py $pythonVersion -retry;
+    } else {
+        (New-Object System.Net.WebClient).DownloadFile($USTScriptURL,"instd.ps1"); ./instd.ps1 -py $pythonVersion; rm -Force ./instd.ps1;
+        #./UST_quick_install_windows-dev.ps1 -py $pythonVersion;
+    }
 
     if ($requireRestart){
-        Write-Host "`n`n(GUI mode only) You must restart the computer before you can run java -jar on the LDAP server...`n`n"
+        printColor "You must restart the computer before you can run java -jar on the LDAP server...`n`n" Yellow
     }
 
 }else{
-    Write-host "Not elevated. Re-run the script with elevated permission"
+    printColor "Not elevated. Re-run the script with elevated permission" Red
 }
 
 
