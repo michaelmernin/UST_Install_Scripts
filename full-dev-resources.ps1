@@ -51,7 +51,7 @@ function Get7Zip {
     if (-not (Test-Path $7zipTempPath))
     {
         #Create Temporary 7zip folder
-        Write-Host "Creating temp 7zip Path - $7zipTempPath"
+        Write-Host "- Creating temp 7zip Path - $7zipTempPath"
         New-Item -Path $7zipTempPath -ItemType 'Directory' -Force | Out-Null
 
         $7Zfilename = $7zURL.Split('/')[-1]
@@ -63,7 +63,7 @@ function Get7Zip {
         (New-Object net.webclient).DownloadFile($7zURL, $7zDownload)
         [System.IO.Compression.ZipFile]::ExtractToDirectory($7zDownload, $7zipTempPath)
     } else {
-        Write-Host "7 zip already found! Skipping..."
+        Write-Host "- 7 zip already found! Skipping..."
     }
     return $7zipTempPath
 
@@ -90,7 +90,7 @@ function Expand-Archive() {
 function SetDirectory(){
 
     $TARGETDIR = (Get-Item -Path ".\" -Verbose).FullName + "\LDAP_test_server"
-    Write-Host "Creating directory $TARGETDIR... "
+    Write-Host "- Creating directory $TARGETDIR... "
     New-Item -ItemType Directory -Force -Path $TARGETDIR | Out-Null
 
     return $TARGETDIR
@@ -111,7 +111,7 @@ function GetJava ($DownloadFolder){
     }
 
     if ($javaInstalled){
-        Write-Host "Java already installed! Skipping...  "
+        Write-Host "- Java already installed! Skipping...  "
         return $false
     }
 
@@ -128,12 +128,12 @@ function GetJava ($DownloadFolder){
         Write-Host "- Begin Java Installation"
         $javaProcess = Start-Process $javaExecutable -ArgumentList @('/s') -Wait -PassThru
         if ($javaProcess.ExitCode -eq 0)        {
-            Write-Host "Java Installation Completed"
+            Write-Host "- Java Installation - Completed"
             [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Java\jre1.8.0_161\bin", [EnvironmentVariableTarget]::Machine)
             return $true
         }
         else        {
-            Write-Host "Java Installation Completed/Error with ExitCode: $( $javaProcess.ExitCode )"
+            Write-Host "- Java Installation - Completed/Error with ExitCode: $( $javaProcess.ExitCode )"
         }
     }
     return $false
@@ -191,7 +191,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-    banner -message "Creating tools directory"
+    banner -message "- Creating tools directory"
     $DownloadFolder = "$env:TEMP\LDAPDownload"
     $LDAPFolder = SetDirectory
 
@@ -219,7 +219,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     Cleanup $DownloadFolder
 
     banner -message "Install Finish" -color Blue
-    Write-Host "Completed - You can run the server from:"
+    Write-Host "- Completed - You can run the server from:"
     printColor $LDAPFolder Green
 
 
@@ -233,11 +233,11 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     }
 
     if ($requireRestart){
-        printColor "You must restart the computer before you can run java -jar on the LDAP server...`n`n" Yellow
+        printColor "- You must restart the computer before you can run java -jar on the LDAP server...`n`n" Yellow
     }
 
 }else{
-    printColor "Not elevated. Re-run the script with elevated permission" Red
+    printColor "- Not elevated. Re-run the script with elevated permission" Red
 }
 
 

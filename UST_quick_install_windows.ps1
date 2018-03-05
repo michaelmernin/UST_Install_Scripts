@@ -58,7 +58,7 @@ function Get7Zip {
     if (-not (Test-Path $7zipTempPath))
     {
         #Create Temporary 7zip folder
-        Write-Host "Creating temp 7zip Path - $7zipTempPath"
+        Write-Host "- Creating temp 7zip Path - $7zipTempPath"
         New-Item -Path $7zipTempPath -ItemType 'Directory' -Force | Out-Null
 
         $7Zfilename = $7zURL.Split('/')[-1]
@@ -96,7 +96,7 @@ function Expand-Archive() {
 function SetDirectory(){
 
     $TARGETDIR = (Get-Item -Path ".\" -Verbose).FullName + "\UST_Install"
-    Write-Host "Creating directory $TARGETDIR... "
+    Write-Host "- Creating directory $TARGETDIR... "
     New-Item -ItemType Directory -Force -Path $TARGETDIR | Out-Null
 
     return $TARGETDIR
@@ -168,7 +168,7 @@ function GetOpenSSL ($USTFolder, $DownloadFolder) {
         try{
             New-Item -Path $openSSLUSTFolder -ItemType Directory -Force | Out-Null
             Expand-Archive -Path $openSSLOutputPath -OutPut $openSSLUSTFolder -ArchiveType zip
-            Write-Host "Completed extracting $openSSLBinFileName to $openSSLUSTFolder"
+            Write-Host "- Completed extracting $openSSLBinFileName to $openSSLUSTFolder"
         }catch{
             Write-Error "Unable to extract openSSL"
         }
@@ -250,11 +250,11 @@ function GetPython ($USTFolder, $DownloadFolder) {
     if ($pythonVersion -eq "3" -and -not $p3_installed) { $install = $true }
     elseif ($pythonVersion -eq "2" -and -not $p2_installed) { $install = $true }
     else {
-        Write-Host "Python version $pythonVersion is already installed...".
+        Write-Host "- Python version $pythonVersion is already installed...".
     }
 
     if ($install){
-        Write-Host "Python $inst_version will be updated/installed...".
+        Write-Host "- Python $inst_version will be updated/installed...".
         if ($inst_version -eq 2){
             $pythonURL = $Python2URL
             $UST_version = 2
@@ -278,7 +278,7 @@ function GetPython ($USTFolder, $DownloadFolder) {
             Write-Host "- Begin Python Installation"
             $pythonProcess = Start-Process $pythonInstallerOutput -ArgumentList @('/passive', 'InstallAllUsers=1', 'PrependPath=1') -Wait -PassThru
             if($pythonProcess.ExitCode -eq 0){
-                Write-Host "Python Installation Completed"
+                Write-Host "- Python Installation - Completed"
             }else{
                 if ($inst_version -eq 3){
                     Write-Host "Error: Python may have failed to install Windows updates for this version of Windows.`nUpdate Windows manually or try installing Python 2 instead..."
@@ -292,13 +292,13 @@ function GetPython ($USTFolder, $DownloadFolder) {
 
                 }
 
-                Write-Host "Python Installation Completed/Error with ExitCode: $($pythonProcess.ExitCode)"
+                Write-Host "- Python Installation - Completed/Error with ExitCode: $($pythonProcess.ExitCode)"
             }
         }
     }
 
     #Set Environment Variable
-    Write-Host "Set PEX_ROOT System Environment Variable"
+    Write-Host "- Set PEX_ROOT System Environment Variable"
     [Environment]::SetEnvironmentVariable("PEX_ROOT", "$env:SystemDrive\PEX", "Machine")
 
 }
@@ -330,7 +330,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
 
     $DownloadFolder = "$env:TEMP\USTDownload"
 
-    banner -message "Creating UST directory"
+    banner -message "- Creating UST directory"
     $USTFolder = SetDirectory
 
     #Create Temp download folder
@@ -381,7 +381,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     Cleanup $DownloadFolder
 
     banner -message "Install Finish" -color Blue
-    Write-Host "Completed - You can begin to edit configuration files in:"
+    Write-Host "- Completed - You can begin to edit configuration files in:"
     printColor $USTFolder Green
     Write-Host "`n"
 
