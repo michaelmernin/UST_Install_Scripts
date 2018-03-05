@@ -7,11 +7,11 @@ You should set the execution policy for powershell to allow your VM to run scrip
 <code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vABrB","${PWD}\inst.ps1"); ./inst.ps1 -py 2; rm -Force ./inst.ps1;</code>
 
 ### Install full dev environment (Java, LDAP):
-<code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vADiN","${PWD}\inst.ps1"); ./inst.ps1 -py 2; rm -Force ./inst.ps1;</code>
+<code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vADiN","${PWD}\instd.ps1"); ./instd.ps1 -py 2; rm -Force ./instd.ps1;</code>
 
-### Exection notes:
+### Execution notes:
 Development installs the dev tools first, and automatically calls the UST script upon finishing -- no need to use both!!
-Installation may fail on python 3 if windows server 2012 is not udpated.  You can choose which version to use by changing the -py flag
+Installation may fail on python 3 on Windows Server 2012r2 unless required windows updates are installed!  You can choose which version to use by changing the -py flag
 on the call. Values of 2 and 3 are allowed.  For example:
 
 <code>(New-Object System.Net.WebClient).DownloadFile("url-here","${PWD}\inst.ps1"); ./inst.ps1 <b>-py 2</b>; rm -Force ./inst.ps1;</code>
