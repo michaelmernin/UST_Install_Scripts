@@ -7,7 +7,7 @@ You should set the execution policy for powershell to allow your VM to run scrip
 <code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vABrB","${PWD}\inst.ps1"); ./inst.ps1 -py 2; rm -Force ./inst.ps1;</code>
 
 ### Install full dev environment (Java, LDAP):
-<code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vADiN","${PWD}\instd.ps1"); ./instd.ps1 -py 2; rm -Force ./instd.ps1;</code>
+<code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vADiN","${PWD}\inst.ps1"); ./inst.ps1 -py 2; rm -Force ./inst.ps1;</code>
 
 ### Execution notes:
 Development installs the dev tools first, and automatically calls the UST script upon finishing -- no need to use both!!

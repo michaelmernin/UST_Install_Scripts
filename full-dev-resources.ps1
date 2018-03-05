@@ -225,10 +225,10 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
 
 
     if ($retry){
-        (New-Object System.Net.WebClient).DownloadFile($USTScriptURL,"instd.ps1"); ./instd.ps1 -py $pythonVersion -retry; rm -Force ./instd.ps1;
+        (New-Object System.Net.WebClient).DownloadFile($USTScriptURL,"${PWD}\instd.ps1"); ./instd.ps1 -py $pythonVersion -retry; rm -Force ./instd.ps1;
         #./UST_quick_install_windows-dev.ps1 -py $pythonVersion -retry;
     } else {
-        (New-Object System.Net.WebClient).DownloadFile($USTScriptURL,"instd.ps1"); ./instd.ps1 -py $pythonVersion; rm -Force ./instd.ps1;
+        (New-Object System.Net.WebClient).DownloadFile($USTScriptURL,"${PWD}\instd.ps1"); ./instd.ps1 -py $pythonVersion; rm -Force ./instd.ps1;
         #./UST_quick_install_windows-dev.ps1 -py $pythonVersion;
     }
 
