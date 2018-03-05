@@ -322,7 +322,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
                             |__/
     "
 
-    printColor $introbanner White
+    printColor $introbanner Cyan
     banner -message "User Sync Tool Quick Install" -color Cyan
     Write-Host ""
 
