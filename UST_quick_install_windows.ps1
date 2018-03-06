@@ -1,8 +1,14 @@
-param([String]$py="3", [Switch]$retry=$false)
+param([String]$py="3",
+    [Switch]$retry=$false,
+    [Switch]$cleanpy=$false)
+
 
 if ($py -eq "2"){
     $pythonVersion = "2"
 } else {$pythonVersion = "3"}
+
+
+
 
 $ErrorActionPreference = "Stop"
 
@@ -93,6 +99,48 @@ function Expand-Archive() {
     }
 }
 
+function pyUninstaller(){
+    banner "Uninstalling Python" -type Info
+    $errors = $false
+
+    $UninstallKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    $reg = [microsoft.win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$env:computername)
+    $regkey = $reg.OpenSubkey($UninstallKey)
+    $subkeys = $regkey.GetSubkeyNames()
+
+    foreach ($k in $subkeys){
+        $thisKey = $reg.OpenSubKey("${UninstallKey}\\${k}")
+        if ($thisKey.GetValue("DisplayName") | Select-String -pattern "(Python)" -Quiet)    {
+            $matches = $true
+            $id = ([String] $thisKey).Split('\')[-1]
+            $rmKey = "HKLM:\\" + $UninstallKey + "\\$id"
+            $app = $thisKey.GetValue("DisplayName")
+
+            Write-Host "- Removing" $app
+
+            $instCode = (Start-Process msiexec.exe -ArgumentList("/x $id /q /norestart") -Wait -PassThru).ExitCode
+
+            if ($instCode -eq 0 -or $instCode -eq 1603)  {
+                if (Test-Path $rmKey) {
+                    Remove-Item -Path $rmKey
+                }
+            } else {
+                $errors = $true
+                printColor "- There was a problem removing ($app)`n- Please remove it manually!" Red
+            }
+
+        }
+    }
+
+    if (-not ($matches)){
+        Write-Host "- Nothing to uninstall!"
+    } elseif ($errors){
+        printColor "`n- Uninstallation completed with some errors..." Yellow
+    } else {
+        printColor "`n- Uninstall completed succesfully!" Green
+    }
+}
+
 function SetDirectory(){
 
     $TARGETDIR = (Get-Item -Path ".\" -Verbose).FullName + "\UST_Install"
@@ -104,7 +152,7 @@ function SetDirectory(){
 }
 
 function GetUSTFiles ($USTFolder, $DownloadFolder) {
-
+    banner -message "Download UST Files"
     if ($pythonVersion -eq 2){
         $URL = $USTPython2URL
     } else {
@@ -226,7 +274,7 @@ python user-sync.pex --process-groups --users mapped
 
 
 function GetPython ($USTFolder, $DownloadFolder) {
-
+    banner -message "Install Python $pythonVersion"
     $install = $FALSE
     $UST_version = 3
     $inst_version = $pythonVersion
@@ -326,6 +374,13 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     banner -message "User Sync Tool Quick Install" -color Cyan
     Write-Host ""
 
+    printColor "*** Parameter List ***`n" Green
+    Write-Host "- Python Version: " $py
+    Write-Host "- Install Retry: " $retry
+    Write-Host "- Clean Py Install: " $cleanpy
+
+    if ($cleanpy) {pyUninstaller}
+
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
     $DownloadFolder = "$env:TEMP\USTDownload"
@@ -341,7 +396,6 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     $7zipTempPath = Get7Zip
 
     try    {
-        banner -message "Install Python $pythonVersion"
         GetPython $USTFolder $DownloadFolder
     } catch {
         banner -type Error
@@ -350,7 +404,6 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     }
 
     try    {
-        banner -message "Download UST Files"
         GetUSTFiles $USTFolder $DownloadFolder $pythonVersion
     } catch {
         banner -type Error
@@ -381,7 +434,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     Cleanup $DownloadFolder
 
     banner -message "Install Finish" -color Blue
-    Write-Host "- Completed - You can begin to edit configuration files in:"
+    Write-Host "- Completed - You can begin to edit configuration files in:`n"
     printColor $USTFolder Green
     Write-Host "`n"
 

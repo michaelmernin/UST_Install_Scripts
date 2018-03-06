@@ -1,8 +1,17 @@
-param([String]$py="3", [Switch]$retry=$false)
+param([String]$py="3",
+    [Switch]$retry=$false,
+    [Switch]$cleanpy=$false)
 
 if ($py -eq "2"){
     $pythonVersion = "2"
 } else {$pythonVersion = "3"}
+
+
+$USTScriptParams = @{
+    py = $pythonVersion
+    retry = $retry
+    cleanpy = $cleanpy
+}
 
 $ErrorActionPreference = "Stop"
 
@@ -219,18 +228,11 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     Cleanup $DownloadFolder
 
     banner -message "Install Finish" -color Blue
-    Write-Host "- Completed - You can run the server from:"
+    Write-Host "- Completed - You can run the server from:`n"
     printColor $LDAPFolder Green
 
-
-
-    if ($retry){
-        (New-Object System.Net.WebClient).DownloadFile($USTScriptURL,"${PWD}\instd.ps1"); .\instd.ps1 -py $pythonVersion -retry; rm -Force .\instd.ps1;
-        #.\UST_quick_install_windows-dev.ps1 -py $pythonVersion -retry;
-    } else {
-        (New-Object System.Net.WebClient).DownloadFile($USTScriptURL,"${PWD}\instd.ps1"); .\instd.ps1 -py $pythonVersion; rm -Force .\instd.ps1;
-        #.\UST_quick_install_windows-dev.ps1 -py $pythonVersion;
-    }
+    #.\UST_quick_install_windows.ps1 @USTScriptParams;
+    (New-Object System.Net.WebClient).DownloadFile($USTScriptURL,"${PWD}\instd.ps1"); .\instd.ps1 @USTScriptParams; rm -Force .\instd.ps1;
 
     if ($requireRestart){
         printColor "- You must restart the computer before you can run java -jar on the LDAP server...`n`n" Yellow
