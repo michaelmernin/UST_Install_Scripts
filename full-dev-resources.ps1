@@ -187,11 +187,12 @@ function Cleanup($DownloadFolder) {
 # Main
 if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
 
-    $introbanner = "
+    $introbanner = "`n
   _   _ ___ _____      ___               ___
  | | | / __|_   _|    |   \ _____ __    | _ \___ ___ ___ _  _ _ _ __ ___ ___
  | |_| \__ \ | |      | |) / -_) V /    |   / -_|_-</ _ \ || | '_/ _/ -_|_-<
   \___/|___/ |_|      |___/\___|\_/     |_|_\___/__/\___/\_,_|_| \__\___/__/
+
     "
 
     printColor $introbanner Blue
