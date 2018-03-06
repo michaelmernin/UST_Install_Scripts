@@ -10,15 +10,41 @@ You should set the execution policy for powershell to allow your VM to run scrip
 <code>(New-Object System.Net.WebClient).DownloadFile("https://git.io/vADiN","${PWD}\inst.ps1"); .\inst.ps1; rm -Force .\inst.ps1;</code>
 
 ### Execution notes:
-Development installs the dev tools first, and automatically calls the UST script upon finishing -- no need to use both!!
-Installation may fail on python 3 on Windows Server 2012r2 unless required windows updates are installed!  You can choose which version to use by changing the -py flag
-on the call. Values of 2 and 3 are allowed.  For example:
+Development installs the dev tools first, and automatically calls the UST script upon finishing -- no need to use both!! The dev
+environment includes a Spring Boot based mock LDAP server which can be used to simulate the directory side of User Sync. The LDAP server
+can be configured using the provided properties and .ldif files.  The external ldif must be specified in the properties file
+to be used (by default, the packaged version is used instead).  To run the server, call:
+
+<code>java -jar ldap-test-server.jar</code>
+
+To verify that the server contains users, visit <code>localhost:8080/index</code> in your browser.  Note that the port
+may differ depending on your properties file.
+
+##### Arguments
+
+<code>-py <2 | 3></code>
+
+You can choose which Python version to use by changing the -py flag
+on the call. Values of 2 and 3 are allowed.  Note that Adobe recommends using at least Python 3.6.3 for future
+support.
+
+<code>-retry</code>
+
+Adding this flag will cause the script to retry Python installation using Python 2 in the case of a failed
+Python 3 install.  Usually this is unnecessary, since you can call -py 2 directly, but it can be useful
+for automated deployement. As an example, Windows 2012r2 will fail to install Python 3 unless certain windows 
+updates are installed. 
+
+<code>-cleanpy</code>
+
+This feature is useful! When used, the script will remove <b>all existing Python installations for all versions</b>, which
+leaves the VM clean so that the correct versions can be used.  User Sync <b>requires</b> that the installed Python version be
+64 bit! This flag helps to smooth and clean up the install process.
+
+
+Example calls with flags:
 
 <code>(New-Object System.Net.WebClient).DownloadFile("url-here","${PWD}\inst.ps1"); .\inst.ps1 <b>-py 2</b>; rm -Force .\inst.ps1;</code>
 
-<code>(New-Object System.Net.WebClient).DownloadFile("url-here","${PWD}\inst.ps1"); .\inst.ps1 <b>-py 3</b>; rm -Force .\inst.ps1;</code>
-
-You can also use the -retry flag in order to automaticall install python 2 if python 3 fails to install
-
-<code>(New-Object System.Net.WebClient).DownloadFile("url-here","${PWD}\inst.ps1"); .\inst.ps1 <b>-retry</b>; rm -Force .\inst.ps1;</code>
+<code>(New-Object System.Net.WebClient).DownloadFile("url-here","${PWD}\inst.ps1"); .\inst.ps1 <b>-cleanpy -retry</b>; rm -Force .\inst.ps1;</code>
 
