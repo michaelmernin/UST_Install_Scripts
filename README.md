@@ -28,13 +28,6 @@ You can choose which Python version to use by changing the -py flag
 on the call. Values of 2 and 3 are allowed.  Note that Adobe recommends using at least Python 3.6.3 for future
 support.
 
-<code>-retry</code>
-
-Adding this flag will cause the script to retry Python installation using Python 2 in the case of a failed
-Python 3 install.  Usually this is unnecessary, since you can call -py 2 directly, but it can be useful
-for automated deployement. As an example, Windows 2012r2 will fail to install Python 3 unless certain windows 
-updates are installed. 
-
 <code>-cleanpy</code>
 
 This feature is useful! When used, the script will remove <b>all existing Python installations for all versions</b>, which

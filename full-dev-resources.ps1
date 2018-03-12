@@ -1,6 +1,5 @@
 param([String]$py="3",
-    [Switch]$retry=$false,
-    [Switch]$cleanpy=$false)
+      [Switch]$cleanpy=$false)
 
 if ($py -eq "2"){
     $pythonVersion = "2"
@@ -9,7 +8,6 @@ if ($py -eq "2"){
 
 $USTScriptParams = @{
     py = $pythonVersion
-    retry = $retry
     cleanpy = $cleanpy
 }
 

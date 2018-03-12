@@ -1,5 +1,4 @@
 param([String]$py="3",
-    [Switch]$retry=$false,
     [Switch]$cleanpy=$false)
 
 
@@ -131,6 +130,16 @@ function pyUninstaller(){
 
         }
     }
+
+    $systemPaths = @("C:\Python27","C:\Program Files\Python36","C:\Program Files (x86)\Python36")
+
+    foreach ($p in $systemPaths){
+        if (Test-Path $p){
+            Write-Host "- Removing $p"
+            Remove-Item -path $p -Force -confirm:$false -recurse
+        }
+    }
+
 
     if (-not ($matches)){
         Write-Host "- Nothing to uninstall!"
@@ -301,6 +310,10 @@ function GetPython ($USTFolder, $DownloadFolder) {
     elseif ($pythonVersion -eq "2" -and -not $p2_installed) { $install = $true }
     else {
         Write-Host "- Python version $pythonVersion is already installed...".
+
+        #Set Environment Variable
+        Write-Host "- Set PEX_ROOT System Environment Variable"
+        [Environment]::SetEnvironmentVariable("PEX_ROOT", "$env:SystemDrive\PEX", "Machine")
     }
 
     if ($install){
@@ -328,18 +341,21 @@ function GetPython ($USTFolder, $DownloadFolder) {
             Write-Host "- Begin Python Installation"
             $pythonProcess = Start-Process $pythonInstallerOutput -ArgumentList @('/passive', 'InstallAllUsers=1', 'PrependPath=1') -Wait -PassThru
             if($pythonProcess.ExitCode -eq 0){
+
+                if ($inst_version -eq 2){
+                    Write-Host "- Rename python.exe to python27.exe to avoid potential conflict..."
+                    Rename-Item -Path "C:\Python27\python.exe" -NewName "python27.exe" -Force
+
+                    Write-Host "- Add C:\Python27 to path..."
+
+
+                    [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Python27\", [EnvironmentVariableTarget]::Machine)
+                }
+
                 Write-Host "- Python Installation - Completed"
             }else{
                 if ($inst_version -eq 3){
                     Write-Host "Error: Python may have failed to install Windows updates for this version of Windows.`nUpdate Windows manually or try installing Python 2 instead..."
-
-                    if ($retry) {
-                        Write-Host "Retry flag specified, defaulting to install Python 2.7 for compatability.... "
-                        $pythonVersion = "2"
-                        GetPython ($USTFolder, $DownloadFolder)
-                        return
-                    }
-
                 }
 
                 Write-Host "- Python Installation - Completed/Error with ExitCode: $($pythonProcess.ExitCode)"
@@ -347,9 +363,7 @@ function GetPython ($USTFolder, $DownloadFolder) {
         }
     }
 
-    #Set Environment Variable
-    Write-Host "- Set PEX_ROOT System Environment Variable"
-    [Environment]::SetEnvironmentVariable("PEX_ROOT", "$env:SystemDrive\PEX", "Machine")
+    return $install
 
 }
 
@@ -378,7 +392,6 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
 
     printColor "*** Parameter List ***`n" Green
     Write-Host "- Python Version: " $py
-    Write-Host "- Install Retry: " $retry
     Write-Host "- Clean Py Install: " $cleanpy
 
     if ($cleanpy) {pyUninstaller}
@@ -397,8 +410,8 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     banner -message "Install 7 zip x64"
     $7zipTempPath = Get7Zip
 
-    try    {
-        GetPython $USTFolder $DownloadFolder
+try    {
+        $requireRestart = GetPython $USTFolder $DownloadFolder
     } catch {
         banner -type Error
         Write-Host "Failed to install Python with error:"
@@ -437,8 +450,11 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
 
     banner -message "Install Finish" -color Blue
     Write-Host "- Completed - You can begin to edit configuration files in:`n"
-    printColor $USTFolder Green
+    printColor "- $USTFolder" Green
     Write-Host "`n"
+    if ($requireRestart){
+        printColor "- You must restart the computer to set Python to path...`n`n" Yellow
+    }
 
 }else{
     Write-host "Not elevated. Re-run the script with elevated permission"
