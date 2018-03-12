@@ -232,9 +232,11 @@ function GetOpenSSL ($USTFolder, $DownloadFolder) {
     $wc = New-Object net.webclient
     $wc.DownloadFile($openSSLConfigURL,$openSSLConfigOutputPath)
 
+    return $openSSLUSTFolder
+
 }
 
-function FinalizeInstallation ($USTFolder, $DownloadFolder) {
+function FinalizeInstallation ($USTFolder, $DownloadFolder, $openSSLUSTFolder) {
 
     #Download Adobe.IO Cert generation Script and put it into utils\openSSL folder
     $adobeIOCertScript = $adobeIOCertScriptURL.Split('/')[-1]
@@ -417,7 +419,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     while ($true)  {
         $i++
         try {
-            GetOpenSSL $USTFolder $DownloadFolder
+            $openSSLUSTFolder = GetOpenSSL $USTFolder $DownloadFolder
             break
         }
         catch {
@@ -430,7 +432,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
         }
     }
 
-    FinalizeInstallation $USTFolder $DownloadFolder
+    FinalizeInstallation $USTFolder $DownloadFolder $openSSLUSTFolder
     Cleanup $DownloadFolder
 
     banner -message "Install Finish" -color Blue
