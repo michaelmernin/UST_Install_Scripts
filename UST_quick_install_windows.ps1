@@ -358,7 +358,8 @@ function GetPython ($USTFolder, $DownloadFolder) {
                     Write-Host "Error: Python may have failed to install Windows updates for this version of Windows.`nUpdate Windows manually or try installing Python 2 instead..."
                 }
 
-                Write-Host "- Python Installation - Completed/Error with ExitCode: $($pythonProcess.ExitCode)"
+                Write-Host "- Python Installation - Error with ExitCode: $($pythonProcess.ExitCode)"
+                $install = $false
             }
         }
     }
