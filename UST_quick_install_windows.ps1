@@ -21,8 +21,7 @@ $openSSLBinURL = "https://indy.fulgan.com/SSL/openssl-1.0.2l-x64_86-win64.zip"
 $adobeIOCertScriptURL = "https://raw.githubusercontent.com/bhunut-adobe/user-sync-quick-install/master/adobe_io_certgen.ps1"
 $Python2URL = "https://www.python.org/ftp/python/2.7.14/python-2.7.14.amd64.msi"
 $Python3URL = "https://www.python.org/ftp/python/3.6.4/python-3.6.4-amd64.exe"
-
-
+$notepadURL = "https://notepad-plus-plus.org/repository/7.x/7.5.5/npp.7.5.5.Installer.x64.exe"
 
 
 function printColor ($msg, $color) {
@@ -107,6 +106,49 @@ function Expand-Archive() {
         $warnings.Add("- " + $PSItem.ToString())
 
     }
+}
+
+function GetNotepadPP($DownloadFolder) {
+
+    banner "Installing Notepad++" -type Info
+
+    $UninstallKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    $reg = [microsoft.win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$env:computername)
+    $subkeys = $reg.OpenSubkey($UninstallKey).GetSubkeyNames()
+
+    foreach ($k in $subkeys)  {
+        $thisKey = $reg.OpenSubKey("${UninstallKey}\\${k}")
+        if ($thisKey.GetValue("DisplayName") | Select-String -pattern "(Notepad\+).+" -Quiet)   {
+            Write-Host "Notepad++ already installed, skipping... "
+            return
+        }
+    }
+
+    $filename = $notepadURL.Split('/')[-1]
+    $nppExecutable = "$DownloadFolder\$filename"
+
+    #Download file
+    Write-Host "- Downloading $filename from $notepadURL"
+
+    (New-Object net.webclient).DownloadFile($notepadURL, $nppExecutable)
+
+    if (Test-Path $nppExecutable){
+        Write-Host "- Begin Notepad++ Installation"
+        $nppProcess = Start-Process $nppExecutable -ArgumentList @('/S') -Wait -PassThru
+        if ($nppProcess.ExitCode -eq 0)        {
+            Write-Host "- Notepad++ Installation - Completed"
+            return
+        }
+        else        {
+            $errmsg =  "- Notepad++ Installation - Error with ExitCode: $( $nppProcess.ExitCode )"
+            printColor $errmsg red
+            $warnings.Add($errmsg)
+        }
+    }
+
+
+
+
 }
 
 function pyUninstaller(){
@@ -287,7 +329,7 @@ function FinalizeInstallation ($USTFolder, $DownloadFolder, $openSSLUSTFolder) {
     if(Test-Path $USTFolder){
         $test_mode_batchfile = @"
 REM "Running UST in TEST-MODE"
-cd $USTFolder
+cd "$USTFolder"
 $pycmd user-sync.pex --process-groups --users mapped -t
 pause
 "@
@@ -295,7 +337,7 @@ pause
 
         $live_mode_batchfile = @"
 REM "Running UST"
-cd $USTFolder
+cd "$USTFolder"
 $pycmd user-sync.pex --process-groups --users mapped
 "@
         $live_mode_batchfile | Out-File "$USTFolder\Run_UST_Live.bat" -Force -Encoding ascii
@@ -452,11 +494,20 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
         throw "Error downloading 7zip, installation cannot continue... "
     }
 
+        try    {
+            $requireRestart = GetPython $USTFolder $DownloadFolder
+        } catch {
+            banner -type Error
+            Write-Host "- Failed to install Python with error:"
+            Write-Host ("- " + $PSItem.ToString())
+            $warnings.Add("- " + $PSItem.ToString())
+        }
+
     try    {
-        $requireRestart = GetPython $USTFolder $DownloadFolder
+        GetNotepadPP $DownloadFolder
     } catch {
         banner -type Error
-        Write-Host "- Failed to install Python with error:"
+        Write-Host "- Failed to install Notepad++ with error:"
         Write-Host ("- " + $PSItem.ToString())
         $warnings.Add("- " + $PSItem.ToString())
     }
@@ -515,7 +566,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
         Write-Host ""
 
     }
-    
+
     Write-Host "- Completed - You can begin to edit configuration files in:`n"
     printColor "- $USTFolder" Green
     Write-Host ""
