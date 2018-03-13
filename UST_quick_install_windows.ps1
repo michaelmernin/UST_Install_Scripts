@@ -355,7 +355,7 @@ function GetPython ($USTFolder, $DownloadFolder) {
                 Write-Host "- Python Installation - Completed"
             }else{
                 if ($inst_version -eq 3){
-                    Write-Host "Error: Python may have failed to install Windows updates for this version of Windows.`nUpdate Windows manually or try installing Python 2 instead..."
+                    printColor "- Error: Python may have failed to install Windows updates for this version of Windows.`n- Update Windows manually or try installing Python 2 instead..." red
                 }
 
                 Write-Host "- Python Installation - Error with ExitCode: $($pythonProcess.ExitCode)"
