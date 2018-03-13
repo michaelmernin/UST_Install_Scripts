@@ -10,6 +10,7 @@ if ($py -eq "2"){
 
 
 $ErrorActionPreference = "Stop"
+$warnings = New-Object System.Collections.Generic.List[System.Object]
 
 # URL's Combined for convenience here
 $7zURL = 'http://www.7-zip.org/a/7za920.zip'
@@ -90,11 +91,21 @@ function Expand-Archive() {
         $ArchiveType
     )
 
-    if ($ArchiveType -eq "tar")    {
-        Start-Process cmd.exe -ArgumentList ("/c $7zipTempPath\7za.exe x $Path -so  | $7zipTempPath\7za.exe x -y -si -aoa -ttar -o`"$OutPut`"") -Wait
+    try
+    {
+        if ($ArchiveType -eq "tar") {
+            Start-Process cmd.exe -ArgumentList ("/c $7zipTempPath\7za.exe x $Path -so  | $7zipTempPath\7za.exe x -y -si -aoa -ttar -o`"$OutPut`"") -Wait
 
-    } else {
-        Start-Process cmd.exe -ArgumentList ("/c $7zipTempPath\7za.exe x $Path -y -tzip -aoa -o`"$OutPut`"") -Wait
+        }
+        else {
+            Start-Process cmd.exe -ArgumentList ("/c $7zipTempPath\7za.exe x $Path -y -tzip -aoa -o`"$OutPut`"") -Wait
+        }
+    } catch {
+
+        printColor "Error while extracting $path..." red
+        printColor ("- " + $PSItem.ToString()) red
+        $warnings.Add("- " + $PSItem.ToString())
+
     }
 }
 
@@ -106,6 +117,7 @@ function pyUninstaller(){
     $reg = [microsoft.win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$env:computername)
     $regkey = $reg.OpenSubkey($UninstallKey)
     $subkeys = $regkey.GetSubkeyNames()
+
 
     foreach ($k in $subkeys){
         $thisKey = $reg.OpenSubKey("${UninstallKey}\\${k}")
@@ -125,7 +137,11 @@ function pyUninstaller(){
                 }
             } else {
                 $errors = $true
-                printColor "- There was a problem removing ($app)`n- Please remove it manually!" Red
+                $errmsg =  "- There was a problem removing ($app)`n- Please remove it manually!"
+                printColor $errmsg red
+                printColor ("- " + $PSItem.ToString()) red
+                $warnings.Add($PSItem.ToString())
+
             }
 
         }
@@ -139,7 +155,6 @@ function pyUninstaller(){
             Remove-Item -path $p -Force -confirm:$false -recurse
         }
     }
-
 
     if (-not ($matches)){
         Write-Host "- Nothing to uninstall!"
@@ -180,8 +195,6 @@ function GetUSTFiles ($USTFolder, $DownloadFolder) {
         #Download file
         Write-Host "- Downloading $filename from $download"
 
-        #Invoke-WebRequest -Uri $download -OutFile $downloadfile
-
         $wc = New-Object net.webclient
         $wc.DownloadFile($download,$downloadfile)
 
@@ -191,6 +204,7 @@ function GetUSTFiles ($USTFolder, $DownloadFolder) {
             Expand-Archive -Path $downloadfile -OutPut $USTFolder -ArchiveType tar
         }
     }
+
 
 
     #Make example config files readable in windows and Copy "config files - basic" to root
@@ -261,6 +275,7 @@ function FinalizeInstallation ($USTFolder, $DownloadFolder, $openSSLUSTFolder) {
         $batchfile | Out-File "$openSSLUSTFolder\Adobe_IO_Cert_Generation.bat" -Force -Encoding ascii
 
     }
+
 
     #Create Test-Mode and Live-Mode UST Batch file
     if(Test-Path $USTFolder){
@@ -358,7 +373,9 @@ function GetPython ($USTFolder, $DownloadFolder) {
                     printColor "- Error: Python may have failed to install Windows updates for this version of Windows.`n- Update Windows manually or try installing Python 2 instead..." red
                 }
 
-                Write-Host "- Python Installation - Error with ExitCode: $($pythonProcess.ExitCode)"
+                $errmsg = "- Python Installation - Error with ExitCode: $($pythonProcess.ExitCode)"
+                printColor $errmsg red
+                $warnings.Add($errmsg)
                 $install = $false
             }
         }
@@ -370,10 +387,15 @@ function GetPython ($USTFolder, $DownloadFolder) {
 
 function Cleanup($DownloadFolder) {
 
-    #Delete Temp DownloadFolder for UST, Python and Config files
-    Remove-Item -Path $DownloadFolder -Recurse -Confirm:$false -Force
-    #Delete 7-zip temp folder
-    Remove-Item -Path "$env:TEMP\7zip" -Recurse -Confirm:$false -Force
+    try{
+        #Delete Temp DownloadFolder for UST, Python and Config files
+        Remove-Item -Path $DownloadFolder -Recurse -Confirm:$false -Force
+    } catch {}
+
+    try {
+        #Delete 7-zip temp folder
+        Remove-Item -Path "$env:TEMP\7zip" -Recurse -Confirm:$false -Force
+    } catch {}
 }
 
 # Main
@@ -395,7 +417,15 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     Write-Host "- Python Version: " $py
     Write-Host "- Clean Py Install: " $cleanpy
 
-    if ($cleanpy) {pyUninstaller}
+    if ($cleanpy) {
+        try {
+            pyUninstaller
+        } catch {
+            $errmsg = "- Failed to completely remove python... "
+            printColor $errmsg red
+            $warnings.Add($errmsg)
+        }
+    }
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -408,23 +438,30 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
 
     # Install Process
-    banner -message "Install 7 zip x64"
-    $7zipTempPath = Get7Zip
 
-try    {
+    try    {
+        banner -message "Install 7 zip x64"
+        $7zipTempPath = Get7Zip
+    } catch {
+        throw "Error downloading 7zip, installation cannot continue... "
+    }
+
+    try    {
         $requireRestart = GetPython $USTFolder $DownloadFolder
     } catch {
         banner -type Error
-        Write-Host "Failed to install Python with error:"
-        Write-Host $PSItem.ToString()
+        Write-Host "- Failed to install Python with error:"
+        Write-Host ("- " + $PSItem.ToString())
+        $warnings.Add("- " + $PSItem.ToString())
     }
 
     try    {
         GetUSTFiles $USTFolder $DownloadFolder $pythonVersion
     } catch {
         banner -type Error
-        Write-Host "Failed to download UST resources with error:"
-        Write-Host $PSItem.ToString()
+        Write-Host "- Failed to download UST resources with error:"
+        Write-Host ("- " + $PSItem.ToString())
+        $warnings.Add("- " + $PSItem.ToString())
     }
 
     # Try loop as connection occasionally fails the first time
@@ -437,24 +474,47 @@ try    {
             break
         }
         catch {
-            printColor "Connection failed... retrying... ctrl-c to abort..." Yellow
+            printColor "- Connection failed... retrying... ctrl-c to abort..." Yellow
         }
         if ($i -eq 5) {
             banner -type Warning
-            printColor "Open SSL failed to download... retry or download manually..." Red
+            $errmsg = "- Open SSL failed to download... retry or download manually..."
+            printColor $errmsg red
+            $warnings.Add($errmsg)
+
             break
         }
     }
 
-    FinalizeInstallation $USTFolder $DownloadFolder $openSSLUSTFolder
+    try  {
+        FinalizeInstallation $USTFolder $DownloadFolder $openSSLUSTFolder
+    } catch {
+        banner -type Error
+        Write-Host "- Failed to create bath files with error:"
+        Write-Host ("- " + $PSItem.ToString())
+        $warnings.Add("- " + $PSItem.ToString())
+    }
+
     Cleanup $DownloadFolder
 
     banner -message "Install Finish" -color Blue
+
+    if ($warnings.Count -gt 0){
+        printColor "- Install completed with some warnings: " yellow
+
+        foreach($w in $warnings){
+            printColor "$w" red
+        }
+
+        Write-Host ""
+
+    }
+    
     Write-Host "- Completed - You can begin to edit configuration files in:`n"
     printColor "- $USTFolder" Green
-    Write-Host "`n"
+    Write-Host ""
     if ($requireRestart){
-        printColor "- You must restart the computer to set Python to path...`n`n" Yellow
+        printColor "- You must restart the computer to set Python to path...`n" Yellow
     }
 
 }else{
