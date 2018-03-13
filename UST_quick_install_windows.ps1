@@ -276,13 +276,19 @@ function FinalizeInstallation ($USTFolder, $DownloadFolder, $openSSLUSTFolder) {
 
     }
 
+    if ($py -eq 2){
+        $pycmd = "python27"
+    }
+    else {
+        $pycmd = "python"
+    }
 
     #Create Test-Mode and Live-Mode UST Batch file
     if(Test-Path $USTFolder){
         $test_mode_batchfile = @"
 REM "Running UST in TEST-MODE"
 cd $USTFolder
-python user-sync.pex --process-groups --users mapped -t
+$pycmd user-sync.pex --process-groups --users mapped -t
 pause
 "@
         $test_mode_batchfile | Out-File "$USTFolder\Run_UST_Test_Mode.bat" -Force -Encoding ascii
@@ -290,7 +296,7 @@ pause
         $live_mode_batchfile = @"
 REM "Running UST"
 cd $USTFolder
-python user-sync.pex --process-groups --users mapped
+$pycmd user-sync.pex --process-groups --users mapped
 "@
         $live_mode_batchfile | Out-File "$USTFolder\Run_UST_Live.bat" -Force -Encoding ascii
     }
@@ -325,10 +331,6 @@ function GetPython ($USTFolder, $DownloadFolder) {
     elseif ($pythonVersion -eq "2" -and -not $p2_installed) { $install = $true }
     else {
         Write-Host "- Python version $pythonVersion is already installed...".
-
-        #Set Environment Variable
-        Write-Host "- Set PEX_ROOT System Environment Variable"
-        [Environment]::SetEnvironmentVariable("PEX_ROOT", "$env:SystemDrive\PEX", "Machine")
     }
 
     if ($install){
@@ -380,6 +382,10 @@ function GetPython ($USTFolder, $DownloadFolder) {
             }
         }
     }
+
+    #Set Environment Variable
+    Write-Host "- Set PEX_ROOT System Environment Variable"
+    [Environment]::SetEnvironmentVariable("PEX_ROOT", "$env:SystemDrive\PEX", "Machine")
 
     return $install
 
