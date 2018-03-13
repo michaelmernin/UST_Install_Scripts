@@ -39,5 +39,5 @@ Example calls with flags:
 
 <code>(New-Object System.Net.WebClient).DownloadFile("url-here","${PWD}\inst.ps1"); .\inst.ps1 <b>-py 2</b>; rm -Force .\inst.ps1;</code>
 
-<code>(New-Object System.Net.WebClient).DownloadFile("url-here","${PWD}\inst.ps1"); .\inst.ps1 <b>-cleanpy -retry</b>; rm -Force .\inst.ps1;</code>
+<code>(New-Object System.Net.WebClient).DownloadFile("url-here","${PWD}\inst.ps1"); .\inst.ps1 <b>-cleanpy</b>; rm -Force .\inst.ps1;</code>
 
