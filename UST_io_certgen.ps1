@@ -33,7 +33,7 @@ if(Test-Path $OpenSSL){
         try {
             # Will not work without GUI
             & explorer.exe "https://www.adobe.io/console"
-        }
+        } catch {}
     }else{
         Write-Error "Error Generating Certificate"
     }
