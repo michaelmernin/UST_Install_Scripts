@@ -7,27 +7,34 @@ if ($py -eq "2"){
 } else {$pythonVersion = "3"}
 
 
-
-
 $ErrorActionPreference = "Stop"
+
+# Array for collecting warnings to display at end of install
 $warnings = New-Object System.Collections.Generic.List[System.Object]
 
 # URL's Combined for convenience here
+$7ZipURL = "https://www.7-zip.org/a/7z1801-x64.exe"
 $7zURL = 'http://www.7-zip.org/a/7za920.zip'
 $USTPython2URL = "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.2/user-sync-v2.2.2-windows-py2714.tar.gz"
 $USTPython3URL = "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.2/user-sync-v2.2.2-windows-py363.tar.gz"
 $USTExamplesURL = "https://github.com/adobe-apiplatform/user-sync.py/releases/download/v2.2.1/example-configurations.tar.gz"
 $openSSLBinURL = "https://indy.fulgan.com/SSL/openssl-1.0.2l-x64_86-win64.zip"
-$adobeIOCertScriptURL = "https://raw.githubusercontent.com/bhunut-adobe/user-sync-quick-install/master/adobe_io_certgen.ps1"
+$adobeIOCertScriptURL = "https://raw.githubusercontent.com/janssenda/UST_Install_Scripts/master/UST_io_certgen.ps1"
+#"https://raw.githubusercontent.com/bhunut-adobe/user-sync-quick-install/master/adobe_io_certgen.ps1"
 $Python2URL = "https://www.python.org/ftp/python/2.7.14/python-2.7.14.amd64.msi"
 $Python3URL = "https://www.python.org/ftp/python/3.6.4/python-3.6.4-amd64.exe"
 $notepadURL = "https://notepad-plus-plus.org/repository/7.x/7.5.5/npp.7.5.5.Installer.x64.exe"
 
+# Set global parameters
+# TLS 1.2 protocol enable - required to download from GitHub, does NOT work on Powershell < 3
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+# Temporary download location
+$DownloadFolder = "$env:TEMP\USTDownload"
 
 function printColor ($msg, $color) {
     Write-Host $msg -ForegroundColor $color
 }
-
 
 function banner {
     Param(
@@ -54,33 +61,6 @@ function banner {
     printColor $messageTop $color
 }
 
-
-function Get7Zip {
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-
-    $7zipTempPath = "$env:TEMP\7zip"
-
-    if (-not (Test-Path $7zipTempPath))
-    {
-        #Create Temporary 7zip folder
-        Write-Host "- Creating temp 7zip Path - $7zipTempPath"
-        New-Item -Path $7zipTempPath -ItemType 'Directory' -Force | Out-Null
-
-        $7Zfilename = $7zURL.Split('/')[-1]
-        $7zDownload = "$7zipTempPath\$7Zfilename"
-
-        #Download 7z Command Line from 7-zip.org
-        Write-Host "- Downloading 7-zip Standalone ($7zURL)"
-
-        (New-Object net.webclient).DownloadFile($7zURL, $7zDownload)
-        [System.IO.Compression.ZipFile]::ExtractToDirectory($7zDownload, $7zipTempPath)
-    } else {
-        Write-Host "7 zip already found! Skipping..."
-    }
-    return $7zipTempPath
-
-}
-
 function Expand-Archive() {
     param(
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
@@ -90,14 +70,15 @@ function Expand-Archive() {
         $ArchiveType
     )
 
+    $7zpath = "C:\7-Zip\7z.exe"
+
     try
     {
         if ($ArchiveType -eq "tar") {
-            Start-Process cmd.exe -ArgumentList ("/c $7zipTempPath\7za.exe x $Path -so  | $7zipTempPath\7za.exe x -y -si -aoa -ttar -o`"$OutPut`"") -Wait
-
+            Start-Process cmd.exe -ArgumentList ("/c ${7zpath} x $Path -so | ${7zpath} x -y -si -aoa -ttar -o`"$OutPut`"") -Wait
         }
         else {
-            Start-Process cmd.exe -ArgumentList ("/c $7zipTempPath\7za.exe x $Path -y -tzip -aoa -o`"$OutPut`"") -Wait
+            Start-Process cmd.exe -ArgumentList ("/c ${7zpath} x $Path -y -tzip -aoa -o`"$OutPut`"") -Wait
         }
     } catch {
 
@@ -108,46 +89,61 @@ function Expand-Archive() {
     }
 }
 
-function GetNotepadPP($DownloadFolder) {
+function install($displayName, $key, $fileURL, $argList){
 
-    banner "Installing Notepad++" -type Info
-
+    banner "Installing $displayName" -type Info
+    # Subkeys from registry for managing installed software state
     $UninstallKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
     $reg = [microsoft.win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$env:computername)
-    $subkeys = $reg.OpenSubkey($UninstallKey).GetSubkeyNames()
+    $UninstallerSubkeys = $reg.OpenSubkey($UninstallKey).GetSubkeyNames()
 
-    foreach ($k in $subkeys)  {
+    foreach ($k in $UninstallerSubkeys)  {
         $thisKey = $reg.OpenSubKey("${UninstallKey}\\${k}")
-        if ($thisKey.GetValue("DisplayName") | Select-String -pattern "(Notepad\+).+" -Quiet)   {
-            Write-Host "Notepad++ already installed, skipping... "
-            return
+        if ($thisKey.GetValue("DisplayName") | Select-String -pattern "($key).+" -Quiet)   {
+            Write-Host "- $displayName already installed, skipping... "
+            $installLocation = $thisKey.GetValue("InstallLocation");
+            return $installLocation
         }
     }
 
-    $filename = $notepadURL.Split('/')[-1]
-    $nppExecutable = "$DownloadFolder\$filename"
+    $filename = $fileURL.Split('/')[-1]
+    $installer = "$DownloadFolder\$filename"
 
     #Download file
-    Write-Host "- Downloading $filename from $notepadURL"
+    Write-Host "- Downloading $filename from $fileURL"
 
-    (New-Object net.webclient).DownloadFile($notepadURL, $nppExecutable)
+    (New-Object net.webclient).DownloadFile($fileURL, $installer)
 
-    if (Test-Path $nppExecutable){
-        Write-Host "- Begin Notepad++ Installation"
-        $nppProcess = Start-Process $nppExecutable -ArgumentList @('/S') -Wait -PassThru
-        if ($nppProcess.ExitCode -eq 0)        {
-            Write-Host "- Notepad++ Installation - Completed"
+    if (Test-Path $installer){
+        Write-Host "- Begin $displayName Installation"
+        $installProcess = Start-Process $installer -ArgumentList @($argList) -Wait -PassThru
+        if ($installProcess.ExitCode -eq 0)        {
+            Write-Host "- $displayName Installation - Completed"
             return
         }
         else        {
-            $errmsg =  "- Notepad++ Installation - Error with ExitCode: $( $nppProcess.ExitCode )"
+            $errmsg =  "-$displayName Installation - Error with ExitCode: $( $installProcess.ExitCode )"
             printColor $errmsg red
             $warnings.Add($errmsg)
         }
     }
 
+    return
+}
 
 
+
+function Get7Zip () {
+    install "7-Zip" "7-Zip" $7ZipURL '/S' > $null
+
+    # Needed to run 7z via command line during extraction (spaces cannot be present)
+    Write-Host "- Creating 7-zip temp folder..."
+    Copy-Item -Path "C:\Program Files\7-Zip" -Destination "C:\" -Force -Recurse
+}
+
+
+function GetNotepadPP(){
+   install "Notepad++" "Notepad\+" $notepadURL '/S'
 
 }
 
@@ -155,13 +151,12 @@ function pyUninstaller(){
     banner "Uninstalling Python" -type Info
     $errors = $false
 
+    # Subkeys from registry for managing installed software state
     $UninstallKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
     $reg = [microsoft.win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$env:computername)
-    $regkey = $reg.OpenSubkey($UninstallKey)
-    $subkeys = $regkey.GetSubkeyNames()
+    $UninstallerSubkeys = $reg.OpenSubkey($UninstallKey).GetSubkeyNames()
 
-
-    foreach ($k in $subkeys){
+    foreach ($k in $UninstallerSubkeys){
         $thisKey = $reg.OpenSubKey("${UninstallKey}\\${k}")
         if ($thisKey.GetValue("DisplayName") | Select-String -pattern "(Python)" -Quiet)    {
             $matches = $true
@@ -209,15 +204,15 @@ function pyUninstaller(){
 
 function SetDirectory(){
 
-    $TARGETDIR = (Get-Item -Path ".\" -Verbose).FullName + "\UST_Install"
-    Write-Host "- Creating directory $TARGETDIR... "
-    New-Item -ItemType Directory -Force -Path $TARGETDIR | Out-Null
+    $USTInstallDir = "$PWD\UST_Install"
+    Write-Host "- Creating directory $USTInstallDir... "
+    New-Item -ItemType Directory -Force -Path $USTInstallDir | Out-Null
 
-    return $TARGETDIR
+    return $USTInstallDir
 
 }
 
-function GetUSTFiles ($USTFolder, $DownloadFolder) {
+function GetUSTFiles ($USTFolder) {
     banner -message "Download UST Files"
     if ($pythonVersion -eq 2){
         $URL = $USTPython2URL
@@ -248,7 +243,6 @@ function GetUSTFiles ($USTFolder, $DownloadFolder) {
     }
 
 
-
     #Make example config files readable in windows and Copy "config files - basic" to root
     $configExamplePath = "$USTFolder\examples"
     if(Test-Path -Path $configExamplePath){
@@ -263,14 +257,14 @@ function GetUSTFiles ($USTFolder, $DownloadFolder) {
 }
 
 
-function GetOpenSSL ($USTFolder, $DownloadFolder) {
+function GetOpenSSL ($USTFolder) {
 
     #Download OpenSSL 1.0.2l binary for Windows and extract to utils folder
     $openSSLBinFileName = $openSSLBinURL.Split('/')[-1]
     $openSSLOutputPath = "$DownloadFolder\$openSSLBinFileName"
     $openSSLUSTFolder = "$USTFolder\Utils\openSSL"
     Write-Host "- Downloading OpenSSL Win32 Binary from $openSSLBinURL"
-    #Invoke-WebRequest -Uri $openSSLBinURL -OutFile $openSSLOutputPath
+
 
     $wc = New-Object net.webclient
     $wc.DownloadFile($openSSLBinURL,$openSSLOutputPath)
@@ -301,7 +295,7 @@ function GetOpenSSL ($USTFolder, $DownloadFolder) {
 
 }
 
-function FinalizeInstallation ($USTFolder, $DownloadFolder, $openSSLUSTFolder) {
+function FinalizeInstallation ($USTFolder, $openSSLUSTFolder) {
 
     #Download Adobe.IO Cert generation Script and put it into utils\openSSL folder
     $adobeIOCertScript = $adobeIOCertScriptURL.Split('/')[-1]
@@ -311,6 +305,8 @@ function FinalizeInstallation ($USTFolder, $DownloadFolder, $openSSLUSTFolder) {
     $wc = New-Object net.webclient
     $wc.DownloadFile($adobeIOCertScriptURL,$adobeIOCertScriptOutputPath)
 
+    echo $adobeIOCertScriptOutputPath
+
     if(Test-Path $adobeIOCertScriptOutputPath){
 
         $batchfile = '@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -file ' + $adobeIOCertScriptOutputPath
@@ -318,11 +314,12 @@ function FinalizeInstallation ($USTFolder, $DownloadFolder, $openSSLUSTFolder) {
 
     }
 
+
     if ($py -eq 2){
-        $pycmd = "python27"
+        $pycmd = "C:\Python27\python.exe"
     }
     else {
-        $pycmd = "python"
+        $pycmd = "C:\Program Files\python36\python.exe"
     }
 
     #Create Test-Mode and Live-Mode UST Batch file
@@ -330,7 +327,7 @@ function FinalizeInstallation ($USTFolder, $DownloadFolder, $openSSLUSTFolder) {
         $test_mode_batchfile = @"
 REM "Running UST in TEST-MODE"
 cd "$USTFolder"
-$pycmd user-sync.pex --process-groups --users mapped -t
+python user-sync.pex --process-groups --users mapped -t
 pause
 "@
         $test_mode_batchfile | Out-File "$USTFolder\Run_UST_Test_Mode.bat" -Force -Encoding ascii
@@ -338,7 +335,7 @@ pause
         $live_mode_batchfile = @"
 REM "Running UST"
 cd "$USTFolder"
-$pycmd user-sync.pex --process-groups --users mapped
+python user-sync.pex --process-groups --users mapped
 "@
         $live_mode_batchfile | Out-File "$USTFolder\Run_UST_Live.bat" -Force -Encoding ascii
     }
@@ -347,17 +344,18 @@ $pycmd user-sync.pex --process-groups --users mapped
 
 
 
-function GetPython ($USTFolder, $DownloadFolder) {
+function GetPython ($USTFolder) {
     banner -message "Install Python $pythonVersion"
     $install = $FALSE
     $UST_version = 3
     $inst_version = $pythonVersion
 
+    # Subkeys from registry for managing installed software state
     $UninstallKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
     $reg = [microsoft.win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$env:computername)
-    $subkeys = $reg.OpenSubkey($UninstallKey).GetSubkeyNames()
+    $UninstallerSubkeys = $reg.OpenSubkey($UninstallKey).GetSubkeyNames()
 
-    foreach ($k in $subkeys){
+    foreach ($k in $UninstallerSubkeys){
         $thisKey = $reg.OpenSubKey("${UninstallKey}\\${k}")
         if ($thisKey.GetValue("DisplayName") | Select-String -pattern "(Python).+(\(64-Bit\))" -Quiet)    {
             $thisKey.GetValue("DisplayVersion") | Select-String -pattern "((3.6)|(2.7))(.)" | foreach-object {
@@ -402,12 +400,7 @@ function GetPython ($USTFolder, $DownloadFolder) {
             if($pythonProcess.ExitCode -eq 0){
 
                 if ($inst_version -eq 2){
-                    Write-Host "- Rename python.exe to python27.exe to avoid potential conflict..."
-                    Rename-Item -Path "C:\Python27\python.exe" -NewName "python27.exe" -Force
-
                     Write-Host "- Add C:\Python27 to path..."
-
-
                     [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Python27\", [EnvironmentVariableTarget]::Machine)
                 }
 
@@ -433,7 +426,7 @@ function GetPython ($USTFolder, $DownloadFolder) {
 
 }
 
-function Cleanup($DownloadFolder) {
+function Cleanup() {
 
     try{
         #Delete Temp DownloadFolder for UST, Python and Config files
@@ -442,7 +435,7 @@ function Cleanup($DownloadFolder) {
 
     try {
         #Delete 7-zip temp folder
-        Remove-Item -Path "$env:TEMP\7zip" -Recurse -Confirm:$false -Force
+        Remove-Item -Path "C:\7-zip" -Recurse -Confirm:$false -Force
     } catch {}
 }
 
@@ -475,10 +468,6 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
         }
     }
 
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-    $DownloadFolder = "$env:TEMP\USTDownload"
-
     banner -message "- Creating UST directory"
     $USTFolder = SetDirectory
 
@@ -486,25 +475,24 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     New-Item -Path $DownloadFolder -ItemType "Directory" -Force | Out-Null
 
     # Install Process
-
     try    {
-        banner -message "Install 7 zip x64"
-        $7zipTempPath = Get7Zip
+        Get7Zip
     } catch {
+        printColor ("- " + $PSItem.ToString()) yellow
         throw "Error downloading 7zip, installation cannot continue... "
     }
 
-        try    {
-            $requireRestart = GetPython $USTFolder $DownloadFolder
-        } catch {
-            banner -type Error
-            Write-Host "- Failed to install Python with error:"
-            Write-Host ("- " + $PSItem.ToString())
-            $warnings.Add("- " + $PSItem.ToString())
-        }
+    try    {
+        $requireRestart = GetPython $USTFolder
+    } catch {
+        banner -type Error
+        Write-Host "- Failed to install Python with error:"
+        Write-Host ("- " + $PSItem.ToString())
+        $warnings.Add("- " + $PSItem.ToString())
+    }
 
     try    {
-        GetNotepadPP $DownloadFolder
+        GetNotepadPP
     } catch {
         banner -type Error
         Write-Host "- Failed to install Notepad++ with error:"
@@ -513,7 +501,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     }
 
     try    {
-        GetUSTFiles $USTFolder $DownloadFolder $pythonVersion
+        GetUSTFiles $USTFolder $pythonVersion
     } catch {
         banner -type Error
         Write-Host "- Failed to download UST resources with error:"
@@ -527,7 +515,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     while ($true)  {
         $i++
         try {
-            $openSSLUSTFolder = GetOpenSSL $USTFolder $DownloadFolder
+            $openSSLUSTFolder = GetOpenSSL $USTFolder
             break
         }
         catch {
@@ -544,15 +532,15 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     }
 
     try  {
-        FinalizeInstallation $USTFolder $DownloadFolder $openSSLUSTFolder
+        FinalizeInstallation $USTFolder $openSSLUSTFolder
     } catch {
         banner -type Error
-        Write-Host "- Failed to create bath files with error:"
+        Write-Host "- Failed to create batch files with error:"
         Write-Host ("- " + $PSItem.ToString())
         $warnings.Add("- " + $PSItem.ToString())
     }
 
-    Cleanup $DownloadFolder
+    Cleanup
 
     banner -message "Install Finish" -color Blue
 
