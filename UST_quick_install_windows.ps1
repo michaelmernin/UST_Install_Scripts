@@ -483,7 +483,7 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     }
 
     try    {
-        $requireRestart = GetPython $USTFolder
+        GetPython $USTFolder
     } catch {
         banner -type Error
         Write-Host "- Failed to install Python with error:"
@@ -558,9 +558,6 @@ if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsI
     Write-Host "- Completed - You can begin to edit configuration files in:`n"
     printColor "- $USTFolder" Green
     Write-Host ""
-    if ($requireRestart){
-        printColor "- You must restart the computer to set Python to path...`n" Yellow
-    }
 
 }else{
     Write-host "Not elevated. Re-run the script with elevated permission"
